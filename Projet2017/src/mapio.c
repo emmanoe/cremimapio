@@ -82,7 +82,46 @@ void map_save (char *filename)
 
 void map_load (char *filename)
 {
-    printf("Loaded since %s\n",filename);
+	char* error = "map_laod";
+    unsigned h, w, nb_objects;
+    int frames, solidity, destructible, collectible, generator;
+    size_t size;
+
+    FILE* fd = fopen(filename,"r");
+    verification(fd==NULL,error); 
+	verification(((fscanf(fd,"%d %d %d\n",&h,&w,&nb_objects) != 3) && (h >0 && w >0)),error);
+   
+    map_allocate (w, h);
+    map_object_begin (nb_objects); // Array of size nb_objects
+
+    
+
+    for (int i=0; i< nb_objects; i++){
+    	
+	    
+	    verification((fscanf(fd,"%zu",&size)!=1) && (size > 0),error);
+	    char object_name[size];
+	    verification(fscanf(fd," %s %d %d %d %d %d\n",object_name, &frames, &solidity, &destructible, &collectible, &generator)!=6,error);
+	    
+	    map_object_add (object_name, frames, solidity | destructible | collectible | generator);
+	}
+
+	map_object_end ();
+
+	for (int i = 0; i < w*h ; i++){
+		int x, y, obj;
+		int ret = fscanf(fd,"%d %d %d\n",&x ,&y, &obj);
+		int cond = ( ret == 3) && (x >=0 && x < w) &&
+		( y >= 0 && y < h) && ( obj >= MAP_OBJECT_NONE && obj < (int)nb_objects);
+        verification(!cond, error);
+        map_set (x, y, obj);
+
+	}
+
+	printf("Loaded since %s\n",filename);
+	
+	fclose(fd);
+
 }
 
 #endif
