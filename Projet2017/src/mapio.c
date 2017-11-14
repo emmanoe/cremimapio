@@ -70,8 +70,7 @@ void map_save (char *filename)
   for(int obj = 0; obj < nb_objects; obj++){
       
     size_t len_name = strlen(map_get_name(obj));
-    char* name = (char*)malloc(sizeof(char)*len_name);
-    strcpy(name,map_get_name(obj));
+    char* name = map_get_name(obj);
     int frames = map_get_frames(obj);
     int solidity = map_get_solidity(obj);
     int destructible = map_is_destructible(obj);
@@ -82,7 +81,6 @@ void map_save (char *filename)
     for(int i = 0; i< len_name;i++){
       verification(write(fd,&name[i],sizeof(char))!=sizeof(char),error);
     }
-    free(name);
     verification(write(fd,&frames,sizeof(int))!=sizeof(int),error);
     verification(write(fd,&solidity,sizeof(int))!=sizeof(int),error);
     verification(write(fd,&destructible,sizeof(int))!=sizeof(int),error);
@@ -129,7 +127,6 @@ void map_load (char *filename)
     verification(read(fd,&len_name,sizeof(size_t))==-1,error);
 
     char object_name[len_name+1];
-    for(int j = 0; j < len_name; object_name[j]=' ', j++);
     
     for(int j = 0; j< len_name; j++){
       verification(read(fd,&object_name[j],sizeof(char))==-1,error);
@@ -139,7 +136,18 @@ void map_load (char *filename)
     verification(read(fd,&destructible,sizeof(int))==-1,error);
     verification(read(fd,&collectible,sizeof(int))==-1,error);
     verification(read(fd,&generator,sizeof(int))==-1,error);
-    map_object_add (object_name, frames, solidity | destructible | collectible | generator);
+
+    int status = solidity;
+    if(destructible){
+      status |= MAP_OBJECT_DESTRUCTIBLE;
+    }
+    if(collectible){
+      status |= MAP_OBJECT_COLLECTIBLE;
+    }
+    if(generator){
+      status |= MAP_OBJECT_GENERATOR;
+    }
+    map_object_add (object_name, frames, status);
     
   }
 
