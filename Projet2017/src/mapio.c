@@ -78,9 +78,7 @@ void map_save (char *filename)
     int generator = map_is_generator(obj);
 
     verification(write(fd,&len_name,sizeof(size_t))!=sizeof(size_t),error);
-    for(int i = 0; i< len_name;i++){
-      verification(write(fd,&name[i],sizeof(char))!=sizeof(char),error);
-    }
+    verification(write(fd,&name[i],len_name*sizeof(char))!=len_name*sizeof(char),error);
     verification(write(fd,&frames,sizeof(int))!=sizeof(int),error);
     verification(write(fd,&solidity,sizeof(int))!=sizeof(int),error);
     verification(write(fd,&destructible,sizeof(int))!=sizeof(int),error);
@@ -128,9 +126,8 @@ void map_load (char *filename)
 
     char object_name[len_name+1];
     
-    for(int j = 0; j< len_name; j++){
-      verification(read(fd,&object_name[j],sizeof(char))==-1,error);
-    }
+      //A verif
+    verification(read(fd,&object_name[j],len_name*sizeof(char))==-1,error);
     verification(read(fd,&frames,sizeof(int))==-1,error);
     verification(read(fd,&solidity,sizeof(int))==-1,error);
     verification(read(fd,&destructible,sizeof(int))==-1,error);
