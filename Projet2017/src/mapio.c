@@ -37,7 +37,7 @@ void map_new (unsigned width, unsigned height)
   map_object_add ("images/floor.png", 1, MAP_OBJECT_SEMI_SOLID);
   // Fleur paysage
   map_object_add ("images/flower.png", 1, MAP_OBJECT_AIR);
-  // Pieces à collecter
+  // Pieces Ã  collecter
   map_object_add ("images/coin.png", 20, MAP_OBJECT_AIR | MAP_OBJECT_COLLECTIBLE);
     
     
@@ -78,7 +78,9 @@ void map_save (char *filename)
     int generator = map_is_generator(obj);
 
     verification(write(fd,&len_name,sizeof(size_t))!=sizeof(size_t),error);
-    verification(write(fd,&name,len_name*sizeof(char))!=len_name*sizeof(char),error);
+    for(int i = 0; i< len_name;i++){
+      verification(write(fd,&name[i],sizeof(char))!=sizeof(char),error);
+    }
     verification(write(fd,&frames,sizeof(int))!=sizeof(int),error);
     verification(write(fd,&solidity,sizeof(int))!=sizeof(int),error);
     verification(write(fd,&destructible,sizeof(int))!=sizeof(int),error);
@@ -91,10 +93,12 @@ void map_save (char *filename)
     for(int y = 0; y < h ; y++){
 	  
       int obj = map_get(x,y);
-
-      verification(write(fd,&x,sizeof(int))!=sizeof(int),error);
-      verification(write(fd,&y,sizeof(int))!=sizeof(int),error);
-      verification(write(fd,&obj,sizeof(int))!=sizeof(int),error);
+      
+      if( obj != MAP_OBJECT_NONE){
+	verification(write(fd,&x,sizeof(int))!=sizeof(int),error);
+	verification(write(fd,&y,sizeof(int))!=sizeof(int),error);
+	verification(write(fd,&obj,sizeof(int))!=sizeof(int),error);
+      }
     }
   }
   printf("Saved in %s\n",filename);
@@ -126,8 +130,9 @@ void map_load (char *filename)
 
     char object_name[len_name+1];
     
-      //A verif
-    verification(read(fd,&object_name,len_name*sizeof(char))==-1,error);
+    for(int j = 0; j< len_name; j++){
+      verification(read(fd,&object_name[j],sizeof(char))==-1,error);
+    }
     verification(read(fd,&frames,sizeof(int))==-1,error);
     verification(read(fd,&solidity,sizeof(int))==-1,error);
     verification(read(fd,&destructible,sizeof(int))==-1,error);
@@ -149,19 +154,22 @@ void map_load (char *filename)
   }
 
   map_object_end ();
-
-  for (int i = 0; i < w*h ; i++){
+  for(;;){
     
     int x, y, obj;
+    int ret_1,ret_2,ret_3;
 
-    verification(read(fd,&x,sizeof(int))==-1,error);
-    verification(read(fd,&y,sizeof(int))==-1,error);
-    verification(read(fd,&obj,sizeof(int))==-1,error);
+    verification((ret_1=read(fd,&x,sizeof(int)))==-1,error);
+    verification((ret_2=read(fd,&y,sizeof(int)))==-1,error);
+    verification((ret_3=read(fd,&obj,sizeof(int)))==-1,error);
+
+    if( !ret_1 && !ret_2 && !ret_2)
+      break;
     
-    int cond = (x >=0 && x < w) &&
-      ( y >= 0 && y < h) && ( obj >= MAP_OBJECT_NONE && obj < (int)nb_objects);
+    int cond = ( obj >= MAP_OBJECT_NONE && obj < (int)nb_objects);
     verification(!cond, error);
-    map_set (x, y, obj);
+    if((x >=0 && x < w) && ( y >= 0 && y < h))
+      map_set (x, y, obj);
 
   }
 
