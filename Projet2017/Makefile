@@ -2,14 +2,16 @@
 LIB_MODE=
 
 PROGRAM	:= game
+MAPUTIL := maputil
 
 # Must be the first rule
 .PHONY: default
-default: $(PROGRAM)
+default: $(PROGRAM) $(MAPUTIL)
 
 SOURCES := $(wildcard src/*.c)
 OBJECTS := $(SOURCES:src/%.c=obj/%.o)
 DEPENDS := $(SOURCES:src/%.c=deps/%.d)
+MDEPENDS := util/src/maputil.c
 
 MAKEFILES := Makefile
 
@@ -35,6 +37,9 @@ endif
 $(PROGRAM): $(CUSTOM_OBJ) $(LIB)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 
+$(MAPUTIL): 	
+	$(CC) $(MDEPENDS) -o maputil
+
 $(OBJECTS): obj/%.o: src/%.c
 	$(CC) -o $@ $(CFLAGS) -c $<
 
@@ -53,4 +58,4 @@ endif
 
 .PHONY: clean
 clean: 
-	rm -f game obj/*.o deps/*.d lib/*.a
+	rm -f maputil game obj/*.o deps/*.d 
