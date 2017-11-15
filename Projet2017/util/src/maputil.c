@@ -19,6 +19,18 @@
 #define opt6 "--setobjects"
 #define opt7 "--pruneobjects"
 
+void get(int fd,int* val,char* s,int depl,int act){
+    lseek(fd,depl,SEEK_SET);
+    read(fd,val,sizeof(unsigned));
+    if(act)
+        printf("%s : %d\n",s,*val);
+}
+
+void set(int fd,int* val,int depl){
+    lseek(fd,depl,SEEK_SET);
+    write(fd,val,sizeof(unsigned));
+}
+
 int main(int argc, char* argv[])
 {
     
@@ -40,21 +52,15 @@ int main(int argc, char* argv[])
                 all_opt = 1;
             
             if(!strcmp(argv[2],valid_options[1]) || all_opt ){
-                lseek(fd,POS_height*sizeof(unsigned),SEEK_SET);
-                read(fd,&val,sizeof(unsigned));
-                printf("height : %d\n",val);
+                get(fd,&val,"height",POS_height*sizeof(unsigned),1);
             }
             
             if(!strcmp(argv[2],valid_options[2]) || all_opt ){
-                lseek(fd,POS_width*sizeof(unsigned),SEEK_SET);
-                read(fd,&val,sizeof(unsigned));
-                printf("width : %d\n",val);
+                get(fd,&val,"width",POS_width*sizeof(unsigned),1);
             }
             
             if(!strcmp(argv[2],valid_options[3]) || all_opt){
-                lseek(fd,POS_objects*sizeof(unsigned),SEEK_SET);
-                read(fd,&val,sizeof(unsigned));
-                printf("objects : %d\n",val);
+                get(fd,&val,"objects",POS_objects*sizeof(unsigned),1);
             }
             
             if(valid == lseek(fd,0,SEEK_CUR)){
@@ -65,16 +71,45 @@ int main(int argc, char* argv[])
         }else if(argc==4){
             
             val = atoi(argv[3]);
+            int current_width,current_height,current_objects;
+            int obj;
+
+            if(!strcmp(argv[2],valid_options[4])){
+                
+                get(fd,&current_height,"",POS_height*sizeof(unsigned),0);
+                get(fd,&current_width,"",POS_width*sizeof(unsigned),0);
+                get(fd,&current_objects,"",POS_objects*sizeof(unsigned),0);
+                
+                if( current_height > val){
+                    lseek(fd,3*sizeof(unsigned),SEEK_SET);
+                    int jmp;
+                    for(int i = 0; i < current_objects; i++){
+                        read(fd,&jmp,sizeof(int));
+                        lseek(fd,jmp*sizeof(char)+5*sizeof(int),SEEK_CUR);
+                    }
+                    for(int i = 0; i < current_height*current_width; i++);
+                    //[À SUIVRE] 2 tête de lectures ? R/D
+                    
+                }else{
+                    obj = MAP_OBJECT_NONE;
+                    lseek(fd,0,SEEK_END);
+                    for(int x = 0; x < current_width; x++){
+                        for(int y = 1 + current_height; y < current_height; y++){
+                            write(fd,&x,sizeof(int));
+                            write(fd,&y,sizeof(int));
+                            write(fd,&obj,sizeof(int));
+                        }
+                    }
+                }
+                
+                set(fd,&val,POS_height*sizeof(unsigned));
+            }
             
-            if(!strcmp(argv[2],valid_options[4]))
-                lseek(fd,POS_height*sizeof(unsigned),SEEK_SET);
+            if(!strcmp(argv[2],valid_options[5])){
+                set(fd,&val,POS_width*sizeof(unsigned));
+            }
             
-            if(!strcmp(argv[2],valid_options[5]))
-                lseek(fd,POS_width*sizeof(unsigned),SEEK_SET);
-            
-            if(valid != lseek(fd,0,SEEK_CUR) || (!strcmp(argv[2],valid_options[4])))
-                write(fd,&val,sizeof(unsigned));
-            else{
+            if(valid == lseek(fd,0,SEEK_CUR)){
                 fprintf(stderr,"invalid option : %s\n",argv[2]);
                 return EXIT_FAILURE;
             }
