@@ -103,12 +103,19 @@ int main(int argc, char* argv[])
 	    if( !ret_1 && !ret_2 && !ret_2)
 	      break;
 
+	    ///////////////////////////////////////////////
+	    lseek(fd,-3*sizeof(int),SEEK_CUR);
 	    if( y > val ){
-	      lseek(fd,-3*sizeof(int),SEEK_CUR);
-	      write(fd,&supp,sizeof(int));
-	      write(fd,&supp,sizeof(int));
-	      write(fd,&obj,sizeof(int));
-	    }	
+	      x = supp;
+	      y = supp;
+	    }else{
+	      y=y-8;
+	    }
+	    ///////////////////////////////////////////////
+
+	    write(fd,&x,sizeof(int));
+	    write(fd,&y,sizeof(int));
+	    write(fd,&obj,sizeof(int));
 		      
 	  }
                     
