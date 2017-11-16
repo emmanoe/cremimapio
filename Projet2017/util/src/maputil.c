@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include "../../include/map.h"
 #include "../../include/error.h"
@@ -77,93 +78,82 @@ int main(int argc, char* argv[])
       int current_height,current_width,current_objects;
       int ret_1,ret_2,ret_3;
       int obj;
+      off_t file_size = lseek(fd,0,SEEK_END);
 
-      if(!strcmp(argv[2],valid_options[4])){
-                
-	get(fd,&current_height,"",POS_height*sizeof(unsigned),0);
-	get(fd,&current_width,"",POS_width*sizeof(unsigned),0);
-	get(fd,&current_objects,"",POS_objects*sizeof(unsigned),0);
-                
-	if( current_height > val){
+      if((!strcmp(argv[2],valid_options[4])) || (!strcmp(argv[2],valid_options[5])))
+	{
+  
+	  val = atoi(argv[3]);
+	  int old_value,depl,current_objects;
+	  int ret_1,ret_2,ret_3;
+	  int obj;
+	  off_t file_size = lseek(fd,0,SEEK_END);
+
+	  if(!strcmp(argv[2],valid_options[4])){
+	    depl = POS_height;
+	  }else{
+	    depl = POS_width;
+	  }
+
+	  get(fd,&old_value,"",depl*sizeof(unsigned),0);
+	  get(fd,&current_objects,"",POS_objects*sizeof(unsigned),0);
+
 	  lseek(fd,3*sizeof(unsigned),SEEK_SET);
-	  int jmp;
+	  size_t jmp;
 	  for(int i = 0; i < current_objects; i++){
-	    read(fd,&jmp,sizeof(int));
+	    read(fd,&jmp,sizeof(size_t));
 	    lseek(fd,jmp*sizeof(char)+5*sizeof(int),SEEK_CUR);
 	  }
-	  for(;;){
-		      
+
+	  while(file_size > lseek(fd,0,SEEK_CUR)){
+
 	    int x,y,obj;
 	    int supp = -1;
+	    int cmp;
 
-	    ret_1 = read(fd,&x,sizeof(int));
-	    ret_2 = read(fd,&y,sizeof(int));
-	    ret_3 = read(fd,&obj,sizeof(int));
+	    read(fd,&x,sizeof(int));
+	    read(fd,&y,sizeof(int));
+	    read(fd,&obj,sizeof(int));
 
-	    if( !ret_1 && !ret_2 && !ret_2)
-	      break;
-
-	    ///////////////////////////////////////////////
-	    lseek(fd,-3*sizeof(int),SEEK_CUR);
-	    if( y > val ){
-	      x = supp;
-	      y = supp;
+	    if( depl == POS_height ){
+	      cmp = y;
 	    }else{
-	      y=y-8;
+	      cmp = x;
 	    }
-	    ///////////////////////////////////////////////
 
+	    lseek(fd,-3*sizeof(int),SEEK_CUR);
+	    
+	    int diff = (old_value-val);
+	    if( old_value > val){
+	      if( cmp-diff < 0 ){
+
+		x = supp;
+		y = supp;
+	      
+	      }else{
+	      
+		cmp -= diff;
+
+	      }
+	    }else{
+	      cmp-=diff;
+	    }
+
+	    if( depl == POS_height ){
+	      y =  cmp;
+	    }else{
+	      x = cmp;
+	    }
+    
 	    write(fd,&x,sizeof(int));
 	    write(fd,&y,sizeof(int));
 	    write(fd,&obj,sizeof(int));
-		      
+	    
 	  }
-                    
-	}
                 
-	set(fd,&val,POS_height*sizeof(unsigned));
-      }
-            
-      if(!strcmp(argv[2],valid_options[5])){
-	      
-	get(fd,&current_height,"",POS_height*sizeof(unsigned),0);
-	get(fd,&current_width,"",POS_width*sizeof(unsigned),0);
-	get(fd,&current_objects,"",POS_objects*sizeof(unsigned),0);
-                
-	if( current_width > val){
-	  lseek(fd,3*sizeof(unsigned),SEEK_SET);
-	  int jmp;
-	  for(int i = 0; i < current_objects; i++){
-	    read(fd,&jmp,sizeof(int));
-	    lseek(fd,jmp*sizeof(char)+5*sizeof(int),SEEK_CUR);
-	  }
-	  for(;;){
-		      
-	    int x,y,obj;
-	    int supp = -1;
-
-	    ret_1 = read(fd,&x,sizeof(int));
-	    ret_2 = read(fd,&y,sizeof(int));
-	    ret_3 = read(fd,&obj,sizeof(int));
-
-	    printf("%d %d %d\n",ret_1,ret_2,ret_3);
-
-	    if( !ret_1 && !ret_2 && !ret_2)
-	      break;
-
-	    if( x > val ){
-	      lseek(fd,-3*sizeof(int),SEEK_CUR);
-	      write(fd,&supp,sizeof(int));
-	      write(fd,&supp,sizeof(int));
-	      write(fd,&obj,sizeof(int));
-	    }	
-		      
-	  }
-                    
+	  set(fd,&val,depl*sizeof(unsigned));
 	}
-	      
-	set(fd,&val,POS_width*sizeof(unsigned));
-      }
+
             
       if(valid == lseek(fd,0,SEEK_CUR)){
 	fprintf(stderr,"invalid option : %s\n",argv[2]);
