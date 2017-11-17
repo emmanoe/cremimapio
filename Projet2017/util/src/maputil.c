@@ -130,16 +130,16 @@ int main(int argc, char* argv[])
                     
                     int diff = (old_value-val);
                     if( old_value > val){//Retrecisseent
-                        if( cmp-diff < 0 ){
+		      if( (cmp-diff < 0 && depl == POS_height) || ( cmp > val && depl == POS_width) ){
                             
                             x = supp;
                             y = supp;
                             
                         }else if( depl == POS_height ){
-                            cmp -= diff;//décalage vers le haut : diff > 0
+                            cmp -= diff;//décalage vers le haut : diff > 0 => cmp dim.
                         }
                     }else if( depl == POS_height ){//Agrandissement
-                            cmp-=diff;//décalage vers le haut : diff < 0
+                            cmp-=diff;//décalage vers le bas : diff < 0 => cmp aug.
                     }
                     
                     if( depl == POS_height ){
