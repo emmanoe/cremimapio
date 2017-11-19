@@ -237,6 +237,7 @@ int main(int argc, char* argv[]){
                 
                 val = atoi(argv[3]);
                 int old_value,depl;
+                int cpt = 0;
                 
                 if(!strcmp(argv[2],valid_options[4])){
                     depl = POS_height;
@@ -271,6 +272,7 @@ int main(int argc, char* argv[]){
                             
                             x = supp;
                             y = supp;
+                            cpt++;
                             
                         }else if( depl == POS_height ){
                             cmp -= diff;//décalage vers le haut : diff > 0 => cmp dim.
@@ -290,7 +292,8 @@ int main(int argc, char* argv[]){
                     write(fd,&obj,sizeof(int));
                     
                 }
-                
+                current_presence-= cpt;
+                set(fd,&current_presence,POS_presence);
                 set(fd,&val,depl);
             }
             
