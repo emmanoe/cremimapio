@@ -23,11 +23,12 @@
 #define opt6 "--setobjects"
 #define opt7 "--pruneobjects"
 
-void get(int fd,int* val,char* s,int depl,int act){
+off_t get(int fd,int* val,char* s,int depl,int act){
     lseek(fd,depl,SEEK_SET);
     read(fd,val,sizeof(unsigned));
     if(act)
         printf("%s : %d\n",s,*val);
+    return lseek(fd,0,SEEK_CUR);
 }
 
 void set(int fd,int* val,int depl){
@@ -35,17 +36,19 @@ void set(int fd,int* val,int depl){
     write(fd,val,sizeof(unsigned));
 }
 
-void getCoords(int fd,int nb_objects){
+off_t getCoords(int fd,int nb_objects){
     lseek(fd,3*sizeof(unsigned),SEEK_SET);
     size_t jmp;
     for(int i = 0; i < nb_objects; i++){
         read(fd,&jmp,sizeof(size_t));
         lseek(fd,jmp*sizeof(char)+5*sizeof(int),SEEK_CUR);
     }
+    return lseek(fd,0,SEEK_CUR);
 }
 
-void getObjts(int fd){
+off_t getObjts(int fd){
     lseek(fd,3*sizeof(unsigned),SEEK_SET);
+    return lseek(fd,0,SEEK_CUR);
 }
 
 void exchange(int fd,int objts, int list1){
@@ -182,7 +185,7 @@ int main(int argc, char* argv[]){
                     
                     int diff = (old_value-val);
                     if( old_value > val){//Retrecisseent
-		      if( (cmp-diff < 0 && depl == POS_height) || ( cmp > val && depl == POS_width) ){
+                        if( (cmp-diff < 0 && depl == POS_height) || ( cmp > val && depl == POS_width) ){
                             
                             x = supp;
                             y = supp;
@@ -191,7 +194,7 @@ int main(int argc, char* argv[]){
                             cmp -= diff;//décalage vers le haut : diff > 0 => cmp dim.
                         }
                     }else if( depl == POS_height ){//Agrandissement
-                            cmp-=diff;//décalage vers le bas : diff < 0 => cmp aug.
+                        cmp-=diff;//décalage vers le bas : diff < 0 => cmp aug.
                     }
                     
                     if( depl == POS_height ){
@@ -210,7 +213,89 @@ int main(int argc, char* argv[]){
             }
             
             if((!strcmp(argv[2],valid_options[6])) ){
-                //TODO
+                
+                int nb_objects = (argc-2)/6;
+                
+                size_t tmp_size[nb_objects];
+                char* tmp_name[nb_objects];
+                int tmp_prop[nb_objects][5];
+                
+                for(int i = 0,k=3; i < nb_objects;k+=6, i++){
+                    tmp_size[i] = strlen(argv[k]);
+                    
+                    tmp_name[i] = (char*) malloc(sizeof(char)*(1+tmp_size[i]));
+                    strcpy(tmp_name[i],argv[k]);
+                    
+                    tmp_prop[i][0] = atoi(argv[k+1]);
+                    
+                    if(!strcmp("air",argv[k+2])){
+                        tmp_prop[i][1] = MAP_OBJECT_AIR;
+                    }else if(!strcmp("solid",argv[k+2])){
+                        tmp_prop[i][1] = MAP_OBJECT_SOLID;
+                    }else if(!strcmp("semi-solid",argv[k+2])){
+                        tmp_prop[i][1] = MAP_OBJECT_SEMI_SOLID;
+                    }else if(!strcmp("liquid",argv[k+2])){
+                        tmp_prop[i][1] = MAP_OBJECT_LIQUID;
+                    }
+                    
+                    tmp_prop[i][2] = (!strcmp("not-destructible",argv[k+3])) ? 0 : 1;
+                    tmp_prop[i][3] = (!strcmp("not-collectible",argv[k+4])) ? 0 : 1;
+                    tmp_prop[i][4] = (!strcmp("not-generator",argv[k+5])) ? 0 : 1;
+                    
+                }
+                
+                getCoords(fd,current_objects);
+                
+                int cpt=0;
+                int x,y,obj;
+                int ind = 0;
+                int tmp_pts[cpt][3];
+                
+                while(file_size > lseek(fd,0,SEEK_CUR)){//Recherche du nombre de points present
+                    read(fd,&x,sizeof(int));
+                    read(fd,&y,sizeof(int));
+                    read(fd,&obj,sizeof(int));
+                    
+                    cpt++;
+                }
+                
+                getCoords(fd,current_objects);
+                
+                while(file_size > lseek(fd,0,SEEK_CUR)){
+                    read(fd,&x,sizeof(int));
+                    read(fd,&y,sizeof(int));
+                    read(fd,&obj,sizeof(int));
+                    
+                    tmp_pts[ind][0] = x;
+                    tmp_pts[ind][1] = y;
+                    tmp_pts[ind][2] = obj;
+                    
+                    ind++;
+                }
+                
+                ftruncate(fd,getObjts(fd));
+                
+                for(int i = 0; i < nb_objects; i++){
+                    
+                    write(fd,&tmp_size[i],sizeof(size_t));
+                    for(int j = 0; j< tmp_size[i];j++){
+                        write(fd,&tmp_name[i][j],sizeof(char));
+                    }
+                    write(fd,&tmp_prop[i][0],sizeof(int));
+                    write(fd,&tmp_prop[i][1],sizeof(int));
+                    write(fd,&tmp_prop[i][2],sizeof(int));
+                    write(fd,&tmp_prop[i][3],sizeof(int));
+                    write(fd,&tmp_prop[i][4],sizeof(int));
+                }
+                
+                for(int i = 0; i < ind; i++){
+                    
+                    write(fd,&tmp_pts[i][0],sizeof(int));
+                    write(fd,&tmp_pts[i][1],sizeof(int));
+                    write(fd,&tmp_pts[i][2],sizeof(int));
+                }
+                
+                set(fd,&nb_objects,POS_objects*sizeof(unsigned));
             }
             
             if((!strcmp(argv[2],valid_options[7])) ){
@@ -274,15 +359,7 @@ int main(int argc, char* argv[]){
                 }
                 close(fd2);
                 
-                while(file_size > lseek(fd,0,SEEK_CUR)){//Nettoyage de la fin du fichier
-                    
-                    int x=-1,y=-1,obj=-1;
-                    
-                    write(fd,&x,sizeof(int));
-                    write(fd,&y,sizeof(int));
-                    write(fd,&obj,sizeof(int));
-                    
-                }
+                ftruncate(fd,lseek(fd,0,SEEK_CUR));//Nettoyage de la fin du fichier
                 
                 set(fd,&cpt,POS_objects*sizeof(unsigned));
             }
