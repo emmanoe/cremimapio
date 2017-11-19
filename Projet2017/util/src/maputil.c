@@ -174,13 +174,18 @@ int main(int argc, char* argv[]){
                 for(int i = 0; i < current_objects; i++){
                     if(!occObjects[i][1]){//Objet inutile
                         for(int k = i; k < current_objects-1;k++){//Placement en bas de la liste d'objet
-                            int tmp;
+                            int tmp[2];
                             
                             exchange(fd,current_objects,k);
                             
-                            tmp = occObjects[k][1];
+                            tmp[1] = occObjects[k][1];
+                            tmp[0] = occObjects[k][0];
+                            
                             occObjects[k][1] = occObjects[k+1][1];
-                            occObjects[k+1][1] = tmp;
+                            occObjects[k][0] = occObjects[k+1][0];
+                            
+                            occObjects[k+1][1] = tmp[1];
+                            occObjects[k+1][0] = tmp[0];
                         }
                         cpt++;//Incrementation du nombre de suppression
                     }
@@ -204,7 +209,11 @@ int main(int argc, char* argv[]){
                     read(fd2,&y,sizeof(int));
                     read(fd2,&obj,sizeof(int));
                     
-                    obj = occObjects[obj][0];//?????
+                    for(int k = 0; k < current_objects;k++){
+                        if(obj==occObjects[k][0]){
+                            obj = k;
+                        }
+                    }
                     
                     write(fd,&x,sizeof(int));
                     write(fd,&y,sizeof(int));
@@ -214,8 +223,8 @@ int main(int argc, char* argv[]){
                 close(fd2);
                 
                 ftruncate(fd,lseek(fd,0,SEEK_CUR));//Nettoyage de la fin du fichier
-                
-                set(fd,&cpt,POS_objects);
+                val = current_objects - cpt;
+                set(fd,&val,POS_objects);
             }
 
             
