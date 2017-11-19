@@ -212,6 +212,7 @@ int main(int argc, char* argv[]){
                     for(int k = 0; k < current_objects;k++){
                         if(obj==occObjects[k][0]){
                             obj = k;
+                            break;
                         }
                     }
                     
