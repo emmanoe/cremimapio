@@ -48,7 +48,6 @@ void getObjts(int fd){
     lseek(fd,3*sizeof(unsigned),SEEK_SET);
 }
 
-
 void exchange(int fd,int objts, int list1){
     
     if(list1 < objts-1 ){
@@ -101,8 +100,7 @@ void exchange(int fd,int objts, int list1){
     }
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
     
     char* error = "maputil";
     
@@ -239,9 +237,9 @@ int main(int argc, char* argv[])
                             
                             exchange(fd,current_objects,k);
                             
-                            tmp = occObjects[i][1];
-                            occObjects[i][1] = occObjects[i+1][1];
-                            occObjects[i+1][1] = tmp;
+                            tmp = occObjects[k][1];
+                            occObjects[k][1] = occObjects[k+1][1];
+                            occObjects[k+1][1] = tmp;
                         }
                         cpt++;//Incrementation du nombre de suppression
                     }
@@ -274,6 +272,18 @@ int main(int argc, char* argv[])
                     write(fd,&obj,sizeof(int));
                     
                 }
+                close(fd2);
+                
+                while(file_size > lseek(fd,0,SEEK_CUR)){//Nettoyage de la fin du fichier
+                    
+                    int x=-1,y=-1,obj=-1;
+                    
+                    write(fd,&x,sizeof(int));
+                    write(fd,&y,sizeof(int));
+                    write(fd,&obj,sizeof(int));
+                    
+                }
+                
                 set(fd,&cpt,POS_objects*sizeof(unsigned));
             }
             
