@@ -44,6 +44,63 @@ void getCoords(int fd,int nb_objects){
     }
 }
 
+void getObjts(int fd){
+    lseek(fd,3*sizeof(unsigned),SEEK_SET);
+}
+
+
+void exchange(int fd,int objts, int list1){
+    
+    if(list1 < objts-1 ){
+        getObjts(fd);
+        size_t jmp[2];
+        int jmp1;
+        char* object_name[2];
+        int frames[2], solidity[2], destructible[2], collectible[2], generator[2];
+        
+        for(int i = 0; i < list1; i++){
+            read(fd,&jmp1,sizeof(size_t));
+            lseek(fd,jmp1*sizeof(char)+5*sizeof(int),SEEK_CUR);
+        }
+        
+        size_t save = lseek(fd,0,SEEK_CUR);
+        
+        for(int k = 0; k < 2; k++){
+            
+            read(fd,&jmp[k],sizeof(size_t));
+            object_name[k]=(char*)malloc(sizeof(char)*jmp[k]);
+            
+            for(int j = 0; j< jmp[k]; j++){
+                read(fd,&object_name[k][j],sizeof(char));
+            }
+            read(fd,&frames[k],sizeof(int));
+            read(fd,&solidity[k],sizeof(int));
+            read(fd,&destructible[k],sizeof(int));
+            read(fd,&collectible[k],sizeof(int));
+            read(fd,&generator[k],sizeof(int));
+        }
+        
+        lseek(fd,save,SEEK_SET);
+        
+        for(int k = 1; k >= 0; k--){
+            
+            write(fd,&jmp[k],sizeof(size_t));
+            object_name[k]=(char*)malloc(sizeof(char)*jmp[k]);
+            
+            for(int j = 0; j< jmp[k]; j++){
+                write(fd,&object_name[k][j],sizeof(char));
+            }
+            write(fd,&frames[k],sizeof(int));
+            write(fd,&solidity[k],sizeof(int));
+            write(fd,&destructible[k],sizeof(int));
+            write(fd,&collectible[k],sizeof(int));
+            write(fd,&generator[k],sizeof(int));
+            
+            free(object_name[k]);
+        }
+    }
+}
+
 int main(int argc, char* argv[])
 {
     
@@ -52,6 +109,7 @@ int main(int argc, char* argv[])
     if(argc > 2){
         
         int fd = open(argv[1],O_RDWR);
+        off_t file_size = lseek(fd,0,SEEK_END);
         //verification( fd == -1,error);
         
         char* valid_options[NB_OPTIONS]={opt0,opt1,opt2,opt3,opt4,opt5,opt6,opt7};
@@ -85,9 +143,7 @@ int main(int argc, char* argv[])
             
             val = atoi(argv[3]);
             int current_objects;
-            int ret_1,ret_2,ret_3;
             int obj;
-            off_t file_size = lseek(fd,0,SEEK_END);
             
             get(fd,&current_objects,"",POS_objects*sizeof(unsigned),0);
             
@@ -96,9 +152,7 @@ int main(int argc, char* argv[])
                 
                 val = atoi(argv[3]);
                 int old_value,depl;
-                int ret_1,ret_2,ret_3;
                 int obj;
-                off_t file_size = lseek(fd,0,SEEK_END);
                 
                 if(!strcmp(argv[2],valid_options[4])){
                     depl = POS_height;
@@ -157,39 +211,70 @@ int main(int argc, char* argv[])
                 set(fd,&val,depl*sizeof(unsigned));
             }
             
+            if((!strcmp(argv[2],valid_options[6])) ){
+                //TODO
+            }
+            
             if((!strcmp(argv[2],valid_options[7])) ){
                 
-                int occObjects[current_objects];
+                int occObjects[current_objects][2];
                 int x,y,obj;
-                for(int i = 0; i < current_objects; occObjects[i]=0,i++);
                 int cpt = 0;
+                for(int i = 0; i < current_objects; occObjects[i][1]=0,occObjects[i][0]=i,i++);
                 
                 getCoords(fd,current_objects);
                 
-                while(file_size > lseek(fd,0,SEEK_CUR)){
+                while(file_size > lseek(fd,0,SEEK_CUR)){//Recherche des objets utilisés
                     read(fd,&x,sizeof(int));
                     read(fd,&y,sizeof(int));
                     read(fd,&obj,sizeof(int));
                     
-                    occObjects[obj] = 1;
+                    occObjects[obj][1] = 1;
                 }
                 
                 for(int i = 0; i < current_objects; i++){
-                    if(!occObjects[i]){
-                        /*WARNING :
-                            - changements des identifiant en cas de suppressions
-                            - pas de troue entre les données
-                         */
-                    }else{
-                        cpt++;
+                    if(!occObjects[i][1]){//Objet inutile
+                        for(int k = i; k < current_objects-1;k++){//Placement en bas de la liste d'objet
+                            int tmp;
+                            
+                            exchange(fd,current_objects,k);
+                            
+                            tmp = occObjects[i][1];
+                            occObjects[i][1] = occObjects[i+1][1];
+                            occObjects[i+1][1] = tmp;
+                        }
+                        cpt++;//Incrementation du nombre de suppression
                     }
                 }
                 
+                getObjts(fd);
+                
+                size_t jmp1;
+                for(int i = 0; i < current_objects-cpt; i++){//Placement après le dernier elements utilisée
+                    read(fd,&jmp1,sizeof(size_t));
+                    lseek(fd,jmp1*sizeof(char)+5*sizeof(int),SEEK_CUR);
+                }
+                
+                int fd2 = open(argv[1],O_RDONLY);//Tete de lecture
+                getCoords(fd2,current_objects);
+                file_size = lseek(fd2,0,SEEK_END);
+                
+                while(file_size > lseek(fd2,0,SEEK_CUR)){//Arrangement des indices
+                    
+                    int x,y,obj;
+                    
+                    read(fd2,&x,sizeof(int));
+                    read(fd2,&y,sizeof(int));
+                    read(fd2,&obj,sizeof(int));
+                    
+                    obj = occObjects[obj][0];
+                    
+                    write(fd,&x,sizeof(int));
+                    write(fd,&y,sizeof(int));
+                    write(fd,&obj,sizeof(int));
+                    
+                }
                 set(fd,&cpt,POS_objects*sizeof(unsigned));
-            }
-            
-            if((!strcmp(argv[2],valid_options[6])) ){
-                //TODO
             }
             
             if(valid == lseek(fd,0,SEEK_CUR)){
