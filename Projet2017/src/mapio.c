@@ -37,7 +37,7 @@ void map_new (unsigned width, unsigned height)
     map_object_add ("images/floor.png", 1, MAP_OBJECT_SEMI_SOLID);
     // Fleur paysage
     map_object_add ("images/flower.png", 1, MAP_OBJECT_AIR);
-    // Pieces Ã  collecter
+    // Pieces Ãƒ  collecter
     map_object_add ("images/coin.png", 20, MAP_OBJECT_AIR | MAP_OBJECT_COLLECTIBLE);
     
     
