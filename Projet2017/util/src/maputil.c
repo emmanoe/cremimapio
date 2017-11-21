@@ -267,9 +267,9 @@ int main(int argc, char* argv[]){
                     
                     int cmp;
                     
-                    read(fd2,&x,sizeof(int));
-                    read(fd2,&y,sizeof(int));
-                    read(fd2,&obj,sizeof(int));
+                    read(fd,&x,sizeof(int));
+                    read(fd,&y,sizeof(int));
+                    read(fd,&obj,sizeof(int));
                     
                     if( depl == POS_height ){
                         cmp = y;
@@ -277,12 +277,13 @@ int main(int argc, char* argv[]){
                         cmp = x;
                     }
                     
-                    lseek(fd,-3*sizeof(int),SEEK_CUR);
+                    //lseek(fd,-3*sizeof(int),SEEK_CUR);
                     
                     int diff = (old_value-val);
                     if( old_value > val){//Retrecisseent
                         if( (cmp-diff < 0 && depl == POS_height) || ( cmp > val && depl == POS_width) ){
-                            
+			  //x = -1;
+			  //y =-1;
                             cpt++;
                             continue;
                             
