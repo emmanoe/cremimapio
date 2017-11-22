@@ -1,4 +1,4 @@
-
+dj
 
 #include <stdio.h>
 #include <unistd.h>
@@ -64,8 +64,8 @@ void read_all(int fd){
     read(fd,&h,sizeof(unsigned));
     read(fd,&w,sizeof(unsigned));
     read(fd,&nb_objts,sizeof(unsigned));
-    printf("h = %d, w = %d, objects = %d\n",h,w,nb_objts);
     read(fd,&nb,sizeof(unsigned));
+    printf("h = %d, w = %d, objects = %d,nb = %d\n",h,w,nb_objts,nb);
     for(int i = 0; i < nb_objts; i++){
         read(fd,&jmp,sizeof(size_t));
         char* object_name = (char*)malloc(sizeof(char)*(jmp+1));
@@ -73,7 +73,7 @@ void read_all(int fd){
         for(int j = 0; j< jmp; j++){
             read(fd,&object_name[j],sizeof(char));
         }
-        object_name[jmp]='\0';
+        //object_name[jmp]='\0';
         printf("%zu %s",jmp,object_name);
         free(object_name);
         for(int j = 0,prop; j< 5; j++){
@@ -487,32 +487,29 @@ int main(int argc, char* argv[]){
                 
                 
                 
-                cpt =0;
+		 cpt =0;
+		int new_id[current_objects];
+		for(int i = 0; i < current_objects; new_id[i]=-1, i++);
+		for(int i = 0; i < current_objects; i++){
+		  for(int k = 0; k < nb_objects; k++){
+		    if(!strcmp(tmp_name[k], old_list[i])){
+		      new_id[i]=k;
+		      break;
+		    }
+		  }
+		  }
                 
                 for(int i = 0; i < current_presence; i++){//insertion de la liste des coordonnÃƒÂ©es
-                    
-                    if(!strcmp(tmp_name[tmp_pts[i][2]],old_list[tmp_pts[i][2]]))
-                        printf("%s %s\n",tmp_name[tmp_pts[i][2]],old_list[tmp_pts[i][2]]);
-                    else{
-                        int found = 0;
-                        for(int k=0; k < nb_objects; k++){
-                            if( 0 == strcmp(old_list[tmp_pts[i][2]],tmp_name[k])){
-                                tmp_pts[i][2]=k;
-                                found=1;
-                                printf("%d | %s %s\n",k,old_list[tmp_pts[i][2]],tmp_name[k]);
-                                break;
-                            }
-                        }
-                        if(!found){
-                            cpt++;
-                            continue;
-                            
-                        }
-                    }
-                    
+		  
+		  if(new_id[tmp_pts[i][2]]==-1){
+		    cpt++;
+		    continue;
+		  }else{
+		    tmp_pts[i][2] =new_id[tmp_pts[i][2]];
+		    }
                     for(int k = 0; k < 3; k++)
                         write(fd,&tmp_pts[i][k],sizeof(int));
-                }
+	    }
                 
                 current_presence-=cpt;
                 set(fd,&current_presence,POS_presence);
