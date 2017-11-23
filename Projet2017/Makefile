@@ -40,7 +40,10 @@ $(PROGRAM): $(CUSTOM_OBJ) $(LIB)
 $(MAPUTIL): 	
 	$(CC) $(MDEPENDS) -o maputil
 
-$(OBJECTS): obj/%.o: src/%.c
+maputil.o: ./util/src/maputil.c
+	gcc -c ./util/src/maputil.c -o ./obj/maputil.o
+
+$(OBJECTS): obj/%.o: src/%.c maputil.o
 	$(CC) -o $@ $(CFLAGS) -c $<
 
 .PHONY: depend
