@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "map.h"
 #include "error.h"
@@ -52,6 +53,34 @@ void verification(int condition,char* error){
     }
 }
 
+void fun(int bool,char* error,int fd, void* buf, void* buf2, void* buf3, void* buf4, void* buf5){
+    
+    if (bool){ // write
+		if (buf!=NULL)
+    		assert((write(fd,buf,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf2!=NULL)
+      		assert((write(fd,buf2,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf3!=NULL)
+      		assert((write(fd,buf3,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf4!=NULL)
+      		assert((write(fd,buf4,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf5!=NULL)
+      		assert((write(fd,buf5,sizeof(unsigned)))==sizeof(unsigned));
+      	}
+    else{ // read
+    	if (buf!=NULL)
+    		assert((read(fd,buf,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf2!=NULL)
+      		assert((read(fd,buf2,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf3!=NULL)
+      		assert((read(fd,buf3,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf4!=NULL)
+      		assert((read(fd,buf4,sizeof(unsigned)))==sizeof(unsigned));
+      	if (buf5!=NULL)
+      		assert((read(fd,buf5,sizeof(unsigned)))==sizeof(unsigned));
+      }
+    }
+
 void map_save (char *filename)
 {
     char* error = "map_save";
@@ -64,10 +93,7 @@ void map_save (char *filename)
     unsigned nb_objects = map_objects();
     unsigned nb_presence = 0;
     
-    verification(write(fd,&h,sizeof(unsigned))!=sizeof(unsigned),error);
-    verification(write(fd,&w,sizeof(unsigned))!=sizeof(unsigned),error);
-    verification(write(fd,&nb_objects,sizeof(unsigned))!=sizeof(unsigned),error);
-    verification(write(fd,&nb_presence,sizeof(unsigned))!=sizeof(unsigned),error);
+    fun(1,"error",fd,&h,&w,&nb_objects,&nb_presence,NULL);
     
     for(int obj = 0; obj < nb_objects; obj++){
         
@@ -79,16 +105,11 @@ void map_save (char *filename)
         int collectible = map_is_collectible(obj);
         int generator = map_is_generator(obj);
         
-        verification(write(fd,&len_name,sizeof(size_t))!=sizeof(size_t),error);
+        verification(write(fd,&len_name,sizeof(size_t))!=sizeof(size_t),error); // ERROR !!
         for(int i = 0; i< len_name;i++){
             verification(write(fd,&name[i],sizeof(char))!=sizeof(char),error);
         }
-        verification(write(fd,&frames,sizeof(int))!=sizeof(int),error);
-        verification(write(fd,&solidity,sizeof(int))!=sizeof(int),error);
-        verification(write(fd,&destructible,sizeof(int))!=sizeof(int),error);
-        verification(write(fd,&collectible,sizeof(int))!=sizeof(int),error);
-        verification(write(fd,&generator,sizeof(int))!=sizeof(int),error);
-        
+        fun(1,"error",fd,&frames,&solidity,&destructible,&collectible,&generator);
     }
     
     for(int x = 0; x < w; x++){
@@ -97,15 +118,13 @@ void map_save (char *filename)
             int obj = map_get(x,y);
             
             if( obj != MAP_OBJECT_NONE){
-                verification(write(fd,&x,sizeof(int))!=sizeof(int),error);
-                verification(write(fd,&y,sizeof(int))!=sizeof(int),error);
-                verification(write(fd,&obj,sizeof(int))!=sizeof(int),error);
+                fun(1,"error",fd,&x,&y,&obj,NULL,NULL);
                 nb_presence++;
             }
         }
     }
     lseek(fd,3*sizeof(unsigned),SEEK_SET);
-    verification(write(fd,&nb_presence,sizeof(unsigned))!=sizeof(unsigned),error);
+    fun(1,"error",fd,&nb_presence,NULL,NULL,NULL,NULL);
     
     printf("Saved in %s\n",filename);
     
@@ -123,10 +142,7 @@ void map_load (char *filename)
     int fd = open(filename,O_RDONLY);
     verification(fd==-1,error);
     
-    verification(read(fd,&h,sizeof(unsigned))==-1,error);
-    verification(read(fd,&w,sizeof(unsigned))==-1,error);
-    verification(read(fd,&nb_objects,sizeof(unsigned))==-1,error);
-    verification(read(fd,&nb_presence,sizeof(unsigned))==-1,error);
+    fun(0,"error",fd,&h,&w,&nb_objects,&nb_presence,NULL);
     
     map_allocate (w, h);
     map_object_begin (nb_objects);
@@ -140,11 +156,7 @@ void map_load (char *filename)
         for(int j = 0; j< len_name; j++){
             verification(read(fd,&object_name[j],sizeof(char))==-1,error);
         }
-        verification(read(fd,&frames,sizeof(int))==-1,error);
-        verification(read(fd,&solidity,sizeof(int))==-1,error);
-        verification(read(fd,&destructible,sizeof(int))==-1,error);
-        verification(read(fd,&collectible,sizeof(int))==-1,error);
-        verification(read(fd,&generator,sizeof(int))==-1,error);
+        fun(0,"error",fd,&frames,&solidity,&destructible,&collectible,&generator);
         
         int status = solidity;
         if(destructible){
@@ -165,9 +177,7 @@ void map_load (char *filename)
         
         int x, y, obj;
         
-        verification(read(fd,&x,sizeof(int))==-1,error);
-        verification(read(fd,&y,sizeof(int))==-1,error);
-        verification(read(fd,&obj,sizeof(int))==-1,error);
+        fun(0,"error",fd,&x,&y,&obj,NULL,NULL);
         
         int cond = ( obj >= MAP_OBJECT_NONE && obj < (int)nb_objects);
         verification(!cond, error);
