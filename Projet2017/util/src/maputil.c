@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <assert.h>
 
 #include "../../include/map.h"
 #include "../../include/error.h"
@@ -26,9 +27,17 @@
 #define opt8 "--getpresence"
 #define opt9 "--getfile"
 
+void verif_ES(int fd,void *buf,size_t size,int isRead){
+    if(isRead){
+        assert((read(fd,buf,size))==size);
+    }else{
+        assert((write(fd,buf,size))==size);
+    }
+}
+
 off_t get(int fd,int* val,char* s,int depl,int act){
     lseek(fd,depl*sizeof(unsigned),SEEK_SET);
-    read(fd,val,sizeof(unsigned));
+    verif_ES(fd,val,sizeof(unsigned),1);
     if(act)
         printf("%s : %d\n",s,*val);
     return lseek(fd,0,SEEK_CUR);
@@ -36,14 +45,14 @@ off_t get(int fd,int* val,char* s,int depl,int act){
 
 void set(int fd,int* val,int depl){
     lseek(fd,depl*sizeof(unsigned),SEEK_SET);
-    write(fd,val,sizeof(unsigned));
+    verif_ES(fd,val,sizeof(unsigned),0);
 }
 
 off_t getCoords(int fd,int nb_objects){
     lseek(fd,4*sizeof(unsigned),SEEK_SET);
     size_t jmp;
     for(int i = 0; i < nb_objects; i++){
-        read(fd,&jmp,sizeof(size_t));
+        verif_ES(fd,&jmp,sizeof(size_t),1);
         lseek(fd,jmp*sizeof(char)+5*sizeof(int),SEEK_CUR);
     }
     return lseek(fd,0,SEEK_CUR);
@@ -59,23 +68,23 @@ void read_all(int fd){
     unsigned h,w,nb_objts,nb;
     size_t jmp;
     lseek(fd,0,SEEK_SET);
-    read(fd,&h,sizeof(unsigned));
-    read(fd,&w,sizeof(unsigned));
-    read(fd,&nb_objts,sizeof(unsigned));
-    read(fd,&nb,sizeof(unsigned));
+    verif_ES(fd,&h,sizeof(unsigned),1);
+    verif_ES(fd,&w,sizeof(unsigned),1);
+    verif_ES(fd,&nb_objts,sizeof(unsigned),1);
+    verif_ES(fd,&nb,sizeof(unsigned),1);
     printf("h = %d, w = %d, objects = %d,nb = %d\n",h,w,nb_objts,nb);
     for(int i = 0; i < nb_objts; i++){
-        read(fd,&jmp,sizeof(size_t));
+        verif_ES(fd,&jmp,sizeof(size_t),1);
         char* object_name = (char*)malloc(sizeof(char)*(jmp+1));
         
         for(int j = 0; j< jmp; j++){
-            read(fd,&object_name[j],sizeof(char));
+            verif_ES(fd,&object_name[j],sizeof(char),1);
         }
-        //object_name[jmp]='\0';
+        object_name[jmp]='\0';
         printf("%zu %s",jmp,object_name);
         free(object_name);
         for(int j = 0,prop; j< 5; j++){
-            read(fd,&prop,sizeof(int));
+            verif_ES(fd,&prop,sizeof(int),1);
             printf(" %d",prop);
         }
         puts("");
@@ -83,9 +92,9 @@ void read_all(int fd){
     }
     
     for(int i = 0,x,y,obj; i < nb; i++){
-        read(fd,&x,sizeof(int));
-        read(fd,&y,sizeof(int));
-        read(fd,&obj,sizeof(int));
+        verif_ES(fd,&x,sizeof(int),1);
+        verif_ES(fd,&y,sizeof(int),1);
+        verif_ES(fd,&obj,sizeof(int),1);
         printf("%d %d %d\n",x,y,obj);
     }
     
@@ -101,7 +110,7 @@ void exchange(int fd,int objts, int list1){
         int frames[2], solidity[2], destructible[2], collectible[2], generator[2];
         
         for(int i = 0; i < list1; i++){
-            read(fd,&jmp1,sizeof(size_t));
+            verif_ES(fd,&jmp1,sizeof(size_t),1);
             lseek(fd,jmp1*sizeof(char)+5*sizeof(int),SEEK_CUR);
         }
         
@@ -109,34 +118,34 @@ void exchange(int fd,int objts, int list1){
         
         for(int k = 0; k < 2; k++){
             
-            read(fd,&jmp[k],sizeof(size_t));
+            verif_ES(fd,&jmp[k],sizeof(size_t),1);
             object_name[k]=(char*)malloc(sizeof(char)*(jmp[k]+1));
             
             for(int j = 0; j< jmp[k]; j++){
-                read(fd,&object_name[k][j],sizeof(char));
+                verif_ES(fd,&object_name[k][j],sizeof(char),1);
             }
             object_name[k][jmp[k]]='\0';
-            read(fd,&frames[k],sizeof(int));
-            read(fd,&solidity[k],sizeof(int));
-            read(fd,&destructible[k],sizeof(int));
-            read(fd,&collectible[k],sizeof(int));
-            read(fd,&generator[k],sizeof(int));
+            verif_ES(fd,&frames[k],sizeof(int),1);
+            verif_ES(fd,&solidity[k],sizeof(int),1);
+            verif_ES(fd,&destructible[k],sizeof(int),1);
+            verif_ES(fd,&collectible[k],sizeof(int),1);
+            verif_ES(fd,&generator[k],sizeof(int),1);
         }
         
         lseek(fd,save,SEEK_SET);
         
         for(int k = 1; k >= 0; k--){
             
-            write(fd,&jmp[k],sizeof(size_t));
+            verif_ES(fd,&jmp[k],sizeof(size_t),0);
             
             for(int j = 0; j< jmp[k]; j++){
-                write(fd,&object_name[k][j],sizeof(char));
+                verif_ES(fd,&object_name[k][j],sizeof(char),0);
             }
-            write(fd,&frames[k],sizeof(int));
-            write(fd,&solidity[k],sizeof(int));
-            write(fd,&destructible[k],sizeof(int));
-            write(fd,&collectible[k],sizeof(int));
-            write(fd,&generator[k],sizeof(int));
+            verif_ES(fd,&frames[k],sizeof(int),0);
+            verif_ES(fd,&solidity[k],sizeof(int),0);
+            verif_ES(fd,&destructible[k],sizeof(int),0);
+            verif_ES(fd,&collectible[k],sizeof(int),0);
+            verif_ES(fd,&generator[k],sizeof(int),0);
             
             free(object_name[k]);
         }
@@ -215,9 +224,9 @@ int main(int argc, char* argv[]){
                 getCoords(fd,current_objects);
                 
                 for(int i = 0; i < current_presence; i++){//Recherche des objets utilisÃƒÂ©s
-                    read(fd,&x,sizeof(int));
-                    read(fd,&y,sizeof(int));
-                    read(fd,&obj,sizeof(int));
+                    verif_ES(fd,&x,sizeof(int),1);
+                    verif_ES(fd,&y,sizeof(int),1);
+                    verif_ES(fd,&obj,sizeof(int),1);
                     
                     occObjects[obj][1] = 1;
                 }
@@ -246,7 +255,7 @@ int main(int argc, char* argv[]){
                 
                 size_t jmp1;
                 for(int i = 0; i < current_objects-cpt; i++){//Placement aprÃƒÂ¨s le dernier elements utilisÃƒÂ©e
-                    read(fd,&jmp1,sizeof(size_t));
+                    verif_ES(fd,&jmp1,sizeof(size_t),1);
                     lseek(fd,jmp1*sizeof(char)+5*sizeof(int),SEEK_CUR);
                 }
                 
@@ -255,9 +264,9 @@ int main(int argc, char* argv[]){
                 
                 for(int i = 0; i < current_presence; i++){//Arrangement des indices
                     
-                    read(fd2,&x,sizeof(int));
-                    read(fd2,&y,sizeof(int));
-                    read(fd2,&obj,sizeof(int));
+                    verif_ES(fd2,&x,sizeof(int),1);
+                    verif_ES(fd2,&y,sizeof(int),1);
+                    verif_ES(fd2,&obj,sizeof(int),1);
                     
                     for(int k = 0; k < current_objects-cpt;k++){
                         
@@ -272,9 +281,9 @@ int main(int argc, char* argv[]){
                         }
                     }
                     
-                    write(fd,&x,sizeof(int));
-                    write(fd,&y,sizeof(int));
-                    write(fd,&obj,sizeof(int));
+                    verif_ES(fd,&x,sizeof(int),0);
+                    verif_ES(fd,&y,sizeof(int),0);
+                    verif_ES(fd,&obj,sizeof(int),0);
                     
                 }
                 close(fd2);
@@ -324,9 +333,9 @@ int main(int argc, char* argv[]){
                 for(int i = 0; i < current_presence; i++){
                     
                     int cmp;
-                    read(fd2,&x,sizeof(int));
-                    read(fd2,&y,sizeof(int));
-                    read(fd2,&obj,sizeof(int));
+                    verif_ES(fd2,&x,sizeof(int),1);
+                    verif_ES(fd2,&y,sizeof(int),1);
+                    verif_ES(fd2,&obj,sizeof(int),1);
                     
                     if(act){
                         if(( depl == POS_height && y == 0 && x == 0 ) || ( depl == POS_width && y == old_value-1 && x == 0 )){
@@ -360,9 +369,9 @@ int main(int argc, char* argv[]){
                         x = cmp;
                     }
                     
-                    write(fd,&x,sizeof(int));
-                    write(fd,&y,sizeof(int));
-                    write(fd,&obj,sizeof(int));
+                    verif_ES(fd,&x,sizeof(int),0);
+                    verif_ES(fd,&y,sizeof(int),0);
+                    verif_ES(fd,&obj,sizeof(int),0);
                     
                 }
                 close(fd2);
@@ -375,14 +384,14 @@ int main(int argc, char* argv[]){
                         for(int y = 0; y < val-old_value; y++){
                             
                             x = 0;
-                            write(fd,&x,sizeof(int));
-                            write(fd,&y,sizeof(int));
-                            write(fd,&obj,sizeof(int));
+                            verif_ES(fd,&x,sizeof(int),0);
+                            verif_ES(fd,&y,sizeof(int),0);
+                            verif_ES(fd,&obj,sizeof(int),0);
                             
                             x = current_width-1;
-                            write(fd,&x,sizeof(int));
-                            write(fd,&y,sizeof(int));
-                            write(fd,&obj,sizeof(int));
+                            verif_ES(fd,&x,sizeof(int),0);
+                            verif_ES(fd,&y,sizeof(int),0);
+                            verif_ES(fd,&obj,sizeof(int),0);
                             
                             current_presence+=2;
                         }
@@ -391,9 +400,9 @@ int main(int argc, char* argv[]){
                         for(int x = old_value; x < val; x++){
                             
                             y = current_height-1 ;
-                            write(fd,&x,sizeof(int));
-                            write(fd,&y,sizeof(int));
-                            write(fd,&obj,sizeof(int));
+                            verif_ES(fd,&x,sizeof(int),0);
+                            verif_ES(fd,&y,sizeof(int),0);
+                            verif_ES(fd,&obj,sizeof(int),0);
                             
                             current_presence++;
                         }
@@ -454,11 +463,11 @@ int main(int argc, char* argv[]){
                 size_t jmp;
                 for(int k = 0; k <current_objects;k++){
                     
-                    read(fd,&jmp,sizeof(size_t));
+                    verif_ES(fd,&jmp,sizeof(size_t),1);
                     old_list[k]=(char*)malloc(sizeof(char)*(jmp+1));
                     
                     for(int j = 0; j< jmp; j++){
-                        read(fd,&old_list[k][j],sizeof(char));
+                        verif_ES(fd,&old_list[k][j],sizeof(char),1);
                     }
                     old_list[k][jmp]='\0';
                     lseek(fd,5*sizeof(int),SEEK_CUR);
@@ -468,46 +477,55 @@ int main(int argc, char* argv[]){
                 
                 for(int i = 0; i < current_presence; i++){//recuperation des donnÃƒÂ©es
                     for(int k = 0; k < 3; k++)
-                    read(fd,&tmp_pts[i][k],sizeof(int));
+                        verif_ES(fd,&tmp_pts[i][k],sizeof(int),1);
                 }
                 
                 ftruncate(fd,getObjts(fd));//nettoyage de la fin du fichier
                 
                 for(int i = 0; i < nb_objects; i++){//ÃƒÂ©criture de la nouvelle liste d'objets
                     
-                    write(fd,&tmp_size[i],sizeof(size_t));
+                    verif_ES(fd,&tmp_size[i],sizeof(size_t),0);
                     for(int j = 0; j< tmp_size[i];j++){
-                        write(fd,&tmp_name[i][j],sizeof(char));
+                        verif_ES(fd,&tmp_name[i][j],sizeof(char),0);
                     }
                     for(int k = 0; k < 5; k++)
-                    write(fd,&tmp_prop[i][k],sizeof(int));
+                        verif_ES(fd,&tmp_prop[i][k],sizeof(int),0);
                 }
                 
                 
                 
-		 cpt =0;
-		int new_id[current_objects];
-		for(int i = 0; i < current_objects; new_id[i]=-1, i++);
-		for(int i = 0; i < current_objects; i++){
-		  for(int k = 0; k < nb_objects; k++){
-		    if(!strcmp(tmp_name[k], old_list[i])){
-		      new_id[i]=k;
-		      break;
-		    }
-		  }
-		  }
+                cpt =0;
+                int new_id[current_objects];
+                for(int i = 0; i < current_objects; new_id[i]=-1, i++);
+                
+                for(int i = 0; i < current_objects; i++){
+                    for(int k = 0; k < nb_objects; k++){
+                        if(!strcmp(tmp_name[k], old_list[i])){
+                            new_id[i]=k;
+                            break;
+                        }
+                    }
+                }
+                
+                for(int i = 0; i < current_objects; i++){
+                    free(old_list[i]);
+                }
+                
+                for(int k = 0; k < nb_objects; k++){
+                    free(tmp_name[k]);
+                }
                 
                 for(int i = 0; i < current_presence; i++){//insertion de la liste des coordonnÃƒÂ©es
-		  
-		  if(new_id[tmp_pts[i][2]]==-1){
-		    cpt++;
-		    continue;
-		  }else{
-		    tmp_pts[i][2] =new_id[tmp_pts[i][2]];
-		    }
+                    
+                    if(new_id[tmp_pts[i][2]]==-1){
+                        cpt++;
+                        continue;
+                    }else{
+                        tmp_pts[i][2] =new_id[tmp_pts[i][2]];
+                    }
                     for(int k = 0; k < 3; k++)
-                        write(fd,&tmp_pts[i][k],sizeof(int));
-	    }
+                        verif_ES(fd,&tmp_pts[i][k],sizeof(int),0);
+                }
                 
                 current_presence-=cpt;
                 set(fd,&current_presence,POS_presence);
