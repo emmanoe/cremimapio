@@ -1,7 +1,3 @@
-Rechercher tester les options de maputil
+Rechercher tester les options de maputil !!!
 Corriger Makefile de la racine
 Faire un Makefile dans le repertoire util pour maputil
-Faire un README.txt dans le repertoire util expliquant les fonctionnalité
-Effectuer des verifications en cas d'erreur via la fonction verification
-
-FUITES MEMOIRES 
