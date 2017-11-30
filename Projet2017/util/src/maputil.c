@@ -27,6 +27,15 @@
 #define opt8 "--getpresence"
 #define opt9 "--getfile"
 
+/*
+* Description : verif_ES read(or write) up to <size> bytes from(to) file descriptor <fd> into the buffer <buf>.
+* Parameters :
+* <fd> the file descriptor
+* <*buf> memory to store output or input data
+* <size> number of bytes expected to be read/writen 
+* <isRead> boolean to know if we want to read or not.
+*/
+
 void verif_ES(int fd,void *buf,size_t size,int isRead){
     if(isRead){
         assert((read(fd,buf,size))==size);
@@ -34,6 +43,16 @@ void verif_ES(int fd,void *buf,size_t size,int isRead){
         assert((write(fd,buf,size))==size);
     }
 }
+
+/*
+* Description : get determine wich of the --get(...) options that is called and then return the right value.
+* Parameters : 
+* <fd> the file descriptor of the map that we are working on
+* <*val> buffer memory to store data
+* <depl> constant that represents position of the saved map attributes in the binary file pointed by fd
+* <act> determine if we want to print(1) data on stdout or write(0) in fd
+* Return : lseek return.
+*/
 
 off_t get(int fd,int* val,char* s,int depl,int act){
     lseek(fd,depl*sizeof(unsigned),SEEK_SET);
@@ -43,11 +62,25 @@ off_t get(int fd,int* val,char* s,int depl,int act){
     return lseek(fd,0,SEEK_CUR);
 }
 
+/* 
+* Description : set determine wich of the --set(...) options that is called and perform the right actions.  
+* Parameters :
+* <fd> the file descriptor of the map that we are working on
+* <*val> buffer memory to store data
+* <depl> constant that represents position of the saved map attributes in the binary file pointed by fd.
+*/
 void set(int fd,int* val,int depl){
     lseek(fd,depl*sizeof(unsigned),SEEK_SET);
     verif_ES(fd,val,sizeof(unsigned),0);
 }
 
+/*
+* Description : getCoords read the file pointed by fd and set the file offset to the attribute <nb_objects> location in this file
+* Parameters :
+* <fd> the file descriptor of the map that we are working on
+* <nb_objects> constant that represent the object that we want to work with
+* Return : the attribute's position in the file
+*/
 off_t getCoords(int fd,int nb_objects){
     lseek(fd,4*sizeof(unsigned),SEEK_SET);
     size_t jmp;
@@ -58,10 +91,21 @@ off_t getCoords(int fd,int nb_objects){
     return lseek(fd,0,SEEK_CUR);
 }
 
-off_t getObjts(int fd){
+/*
+* Description : getObjts read the file pointed by fd and set the file offset to the first attribute which is object 
+* Parameters :
+* <fd> the file descriptor of the map that we are working on
+* Return : the attribute's position in the file
+*/
+off_t getObjts(int fd){ 
     lseek(fd,4*sizeof(unsigned),SEEK_SET);
     return lseek(fd,0,SEEK_CUR);
 }
+
+/*
+* Description : read_all read all the file pointed by fd and print the result on stdout
+* <fd> the file descriptor of the map that we are working on
+*/
 
 void read_all(int fd){
     
@@ -101,6 +145,13 @@ void read_all(int fd){
     
 }
 
+/* 
+* Description : exchange is a fubction that remove object from the map by updating their index <list1>. 
+* Parameters :
+* <fd> the file descriptor of the map that we are working on
+* <objts> the number of current objects on the map 
+* <list1> the limit of the new index range.
+*/
 void exchange(int fd,int objts, int list1){
     
     if(list1 < objts-1 ){
