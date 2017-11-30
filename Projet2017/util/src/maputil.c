@@ -76,6 +76,7 @@ void read_all(int fd){
     for(int i = 0; i < nb_objts; i++){
         verif_ES(fd,&jmp,sizeof(size_t),1);
         char* object_name = (char*)malloc(sizeof(char)*(jmp+1));
+        if(object_name==NULL)exit(EXIT_FAILURE);
         
         for(int j = 0; j< jmp; j++){
             verif_ES(fd,&object_name[j],sizeof(char),1);
@@ -120,6 +121,7 @@ void exchange(int fd,int objts, int list1){
             
             verif_ES(fd,&jmp[k],sizeof(size_t),1);
             object_name[k]=(char*)malloc(sizeof(char)*(jmp[k]+1));
+            if(object_name[k]==NULL)exit(EXIT_FAILURE);
             
             for(int j = 0; j< jmp[k]; j++){
                 verif_ES(fd,&object_name[k][j],sizeof(char),1);
@@ -172,6 +174,9 @@ int main(int argc, char* argv[]){
         }
         
         int fd = open(argv[1],O_RDWR);
+        if(fd < 0)
+            return EXIT_FAILURE;
+
         off_t file_size = lseek(fd,0,SEEK_END);
         
         int val;
@@ -260,6 +265,8 @@ int main(int argc, char* argv[]){
                 }
                 
                 int fd2 = open(argv[1],O_RDONLY);//Tete de lecture
+                if(fd2 < 0)
+                    return EXIT_FAILURE;
                 getCoords(fd2,current_objects);
                 
                 for(int i = 0; i < current_presence; i++){//Arrangement des indices
@@ -308,7 +315,7 @@ int main(int argc, char* argv[]){
                     if(val >= 12 && val <= 20)
                         depl = POS_height;
                     else{
-                        puts("La hauteur est bornÃ©e de [12;20] !");
+                        puts("Height must be between [12;20] !");
                         close(fd);
                         return EXIT_FAILURE;
                     }
@@ -316,7 +323,7 @@ int main(int argc, char* argv[]){
                     if(val >= 30 && val <= 1024)
                         depl = POS_width;
                     else{
-                        puts("La largeur est bornÃ©e de [30;1024] !");
+                        puts("Width must be between [30;1024] !");
                         close(fd);
                         return EXIT_FAILURE;
                     }
@@ -325,6 +332,8 @@ int main(int argc, char* argv[]){
                 get(fd,&old_value,"",depl,0);
                 
                 int fd2 = open(argv[1],O_RDONLY);
+                if(fd2 < 0)
+                    return EXIT_FAILURE;
                 getCoords(fd,current_objects);
                 getCoords(fd2,current_objects);
                 
@@ -438,6 +447,8 @@ int main(int argc, char* argv[]){
                     tmp_size[i] = strlen(argv[k]);
                     
                     tmp_name[i] = (char*) malloc(sizeof(char)*(1+tmp_size[i]));
+                    if(tmp_name[i]==NULL)exit(EXIT_FAILURE);
+
                     strcpy(tmp_name[i],argv[k]);
                     
                     tmp_prop[i][0] = atoi(argv[k+1]);
@@ -465,6 +476,7 @@ int main(int argc, char* argv[]){
                     
                     verif_ES(fd,&jmp,sizeof(size_t),1);
                     old_list[k]=(char*)malloc(sizeof(char)*(jmp+1));
+                    if(old_list[k]==NULL)exit(EXIT_FAILURE);
                     
                     for(int j = 0; j< jmp; j++){
                         verif_ES(fd,&old_list[k][j],sizeof(char),1);
