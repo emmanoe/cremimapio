@@ -226,8 +226,10 @@ int main(int argc, char* argv[]){
         }
         
         int fd = open(argv[1],O_RDWR);
-        if(fd < 0)
+        if(fd < 0){
+            perror("open");
             return EXIT_FAILURE;
+        }
 
         off_t file_size = lseek(fd,0,SEEK_END);
         
@@ -319,8 +321,10 @@ int main(int argc, char* argv[]){
                 }
                 
                 int fd2 = open(argv[1],O_RDONLY);//Tete de lecture
-                if(fd2 < 0)
+                if(fd2 < 0){
+                    perror("open");
                     return EXIT_FAILURE;
+                }
                 getCoords(fd2,current_objects);
                 
                 for(int i = 0; i < current_presence; i++){//Arrangement des indices
@@ -387,8 +391,10 @@ int main(int argc, char* argv[]){
                 get(fd,&old_value,"",depl,0);
                 
                 int fd2 = open(argv[1],O_RDONLY);
-                if(fd2 < 0)
+                if(fd2 < 0){
+                    perror("open");
                     return EXIT_FAILURE;
+                }
                 getCoords(fd,current_objects);
                 getCoords(fd2,current_objects);
                 
@@ -601,12 +607,16 @@ int main(int argc, char* argv[]){
             }
         }
         else{
-            fprintf(stderr,"error arguments\n");
+            fprintf(stderr,"Error arguments\n");
             return EXIT_FAILURE;
         }
-        
+
         close(fd);
     }
-    
-    return 0;
+
+    else{
+            fprintf(stderr,"Error arguments\n");
+            fprintf(stderr, "Usage: ./maputil <file> --action\n");
+            return EXIT_FAILURE;
+        }
 }
