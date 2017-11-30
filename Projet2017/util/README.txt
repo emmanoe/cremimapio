@@ -23,7 +23,7 @@ maputil <file> --setheight <h>	--> Remplace la hauteur de la carte <file> par la
 
 ------------------------Remplacer les objets d'une carte----------------------
 
-xargs ./util/maputil maps/saved.map --setobjects < util/objects.txt
+xargs ./maputil maps/saved.map --setobjects < util/objects.txt
 
 --> xargs reinitialise la liste des objets qui composent la carte par ceux contenus dans le fichier objects.txt
 
