@@ -213,6 +213,7 @@ int main(int argc, char* argv[]){
         
         char* valid_options[NB_OPTIONS]={opt0,opt1,opt2,opt3,opt4,opt5,opt6,opt7,opt8,opt9};
         
+        /* Check if maputil <args> entered is valid*/
         int verif = 0;
         for(int i = 0; i < NB_OPTIONS; i++){
             if(!strcmp(argv[2],valid_options[i]))
@@ -240,11 +241,13 @@ int main(int argc, char* argv[]){
         int current_objects;
         int current_presence;
         
+        /* intitalize the first lines of file with height, width, objects and presence current values*/
         get(fd,&current_height,"",POS_height ,0);
         get(fd,&current_width,"",POS_width,0);
         get(fd,&current_objects,"",POS_objects,0);
         get(fd,&current_presence,"",POS_presence,0);
         
+        /*Consult map informations section*/
         if(argc == 3){
             
             if(!strcmp(argv[2],valid_options[0]))
@@ -279,7 +282,7 @@ int main(int argc, char* argv[]){
                 
                 getCoords(fd,current_objects);
                 
-                for(int i = 0; i < current_presence; i++){//Recherche des objets utilisÃƒÂ©s
+                for(int i = 0; i < current_presence; i++){//Recherche des objets utilise
                     verif_ES(fd,&x,sizeof(int),1);
                     verif_ES(fd,&y,sizeof(int),1);
                     verif_ES(fd,&obj,sizeof(int),1);
@@ -310,7 +313,7 @@ int main(int argc, char* argv[]){
                 getObjts(fd);
                 
                 size_t jmp1;
-                for(int i = 0; i < current_objects-cpt; i++){//Placement aprÃƒÂ¨s le dernier elements utilisÃƒÂ©e
+                for(int i = 0; i < current_objects-cpt; i++){//Placement apres le dernier elements utilise
                     verif_ES(fd,&jmp1,sizeof(size_t),1);
                     lseek(fd,jmp1*sizeof(char)+5*sizeof(int),SEEK_CUR);
                 }
@@ -351,7 +354,8 @@ int main(int argc, char* argv[]){
                 set(fd,&val,POS_objects);
             }
             
-            
+        
+        /*Modify map informations section*/    
         }else if(argc==4){
             
             val = atoi(argv[3]);
@@ -417,10 +421,10 @@ int main(int argc, char* argv[]){
                             continue;
                             
                         }else if( depl == POS_height ){
-                            cmp -= diff;//dÃƒÂ©calage vers le haut : diff > 0 => cmp dim.
+                            cmp -= diff;//decalage vers le haut : diff > 0 => cmp dim.
                         }
                     }else if( depl == POS_height ){//Agrandissement
-                        cmp-=diff;//dÃƒÂ©calage vers le bas : diff < 0 => cmp aug.
+                        cmp-=diff;//decalage vers le bas : diff < 0 => cmp aug.
                     }
                     
                     if( depl == POS_height ){
@@ -481,7 +485,7 @@ int main(int argc, char* argv[]){
                 fprintf(stderr,"invalid option : %s\n",argv[2]);
                 return EXIT_FAILURE;
             }
-            
+        /* argc == 3 moved here to write the whole --setobject function */    
         }else if(!((argc-3)%6)){
             if((!strcmp(argv[2],valid_options[6])) ){
                 
@@ -497,7 +501,7 @@ int main(int argc, char* argv[]){
                 for(int i = 0,k=3; i < nb_objects;k+=6, i++){
                     tmp_size[i] = strlen(argv[k]);
                     
-                    tmp_name[i] = (char*) malloc(sizeof(char)*(1+tmp_size[i]));
+                    tmp_name[i] = (char*) malloc(sizeof(char)*(1+tmp_size[i])); 
                     if(tmp_name[i]==NULL)exit(EXIT_FAILURE);
 
                     strcpy(tmp_name[i],argv[k]);
@@ -520,7 +524,7 @@ int main(int argc, char* argv[]){
                     
                 }
                 
-                char* old_list[current_objects];//A FREE
+                char* old_list[current_objects];
                 getObjts(fd);
                 size_t jmp;
                 for(int k = 0; k <current_objects;k++){
@@ -538,14 +542,14 @@ int main(int argc, char* argv[]){
                 
                 getCoords(fd,current_objects);
                 
-                for(int i = 0; i < current_presence; i++){//recuperation des donnÃƒÂ©es
+                for(int i = 0; i < current_presence; i++){//recuperation des donnees
                     for(int k = 0; k < 3; k++)
                         verif_ES(fd,&tmp_pts[i][k],sizeof(int),1);
                 }
                 
                 ftruncate(fd,getObjts(fd));//nettoyage de la fin du fichier
                 
-                for(int i = 0; i < nb_objects; i++){//ÃƒÂ©criture de la nouvelle liste d'objets
+                for(int i = 0; i < nb_objects; i++){//Ecriture de la nouvelle liste d'objets
                     
                     verif_ES(fd,&tmp_size[i],sizeof(size_t),0);
                     for(int j = 0; j< tmp_size[i];j++){
@@ -578,7 +582,7 @@ int main(int argc, char* argv[]){
                     free(tmp_name[k]);
                 }
                 
-                for(int i = 0; i < current_presence; i++){//insertion de la liste des coordonnÃƒÂ©es
+                for(int i = 0; i < current_presence; i++){//insertion de la liste des coordonnees
                     
                     if(new_id[tmp_pts[i][2]]==-1){
                         cpt++;
