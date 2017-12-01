@@ -45,10 +45,11 @@ void verif_ES(int fd,void *buf,size_t size,int isRead){
 }
 
 /*
-* Description : get determine wich of the --get(...) options that is called and then return the right value.
+* Description : get repositions (according to depl) the offset of the file pointed by fd, read and then store the data in val 
 * Parameters : 
 * <fd> the file descriptor of the map that we are working on
 * <*val> buffer memory to store data
+* <s> : required string if we want to print get information
 * <depl> constant that represents position of the saved map attributes in the binary file pointed by fd
 * <act> determine if we want to print(1) data on stdout or write(0) in fd
 * Return : lseek return.
@@ -63,7 +64,7 @@ off_t get(int fd,int* val,char* s,int depl,int act){
 }
 
 /* 
-* Description : set determine wich of the --set(...) options that is called and perform the right actions.  
+* Description : set repositions (according to depl) the offset of the file pointed by fd and write the data in val  
 * Parameters :
 * <fd> the file descriptor of the map that we are working on
 * <*val> buffer memory to store data
@@ -92,10 +93,10 @@ off_t getCoords(int fd,int nb_objects){
 }
 
 /*
-* Description : getObjts read the file pointed by fd and set the file offset to the first attribute which is object 
+* Description : getObjts read the file pointed by fd and set the file offset at the begining of the object list 
 * Parameters :
 * <fd> the file descriptor of the map that we are working on
-* Return : the attribute's position in the file
+* Return : the list's position in the file
 */
 off_t getObjts(int fd){ 
     lseek(fd,4*sizeof(unsigned),SEEK_SET);
@@ -146,7 +147,7 @@ void read_all(int fd){
 }
 
 /* 
-* Description : exchange is a fubction that remove object from the map by updating their index <list1>. 
+* Description : exchange is a function that exchange the position of 2 object in the file pointed by fd . 
 * Parameters :
 * <fd> the file descriptor of the map that we are working on
 * <objts> the number of current objects on the map 
@@ -619,4 +620,5 @@ int main(int argc, char* argv[]){
             fprintf(stderr, "Usage: ./maputil <file> --action\n");
             return EXIT_FAILURE;
         }
+    return 0;
 }
