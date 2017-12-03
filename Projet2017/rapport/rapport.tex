@@ -5,14 +5,14 @@
 \lhead{}
 \chead{}
 \rhead{}
-\lfoot{Programmation système}
+\lfoot{Programmation syst\`{e}me}
 \cfoot{Groupe 6}
 \rfoot{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 \usepackage{graphicx}
 \usepackage[french]{babel}
-\title{\textbf{Rapport du projet de programmation système}}
+\title{\textbf{Rapport du projet de programmation syst\`{e}me}}
 \author{Aza, Willem, Tremor Sullyvan, Delar Emmanoe}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -32,19 +32,40 @@
 
 \newpage
 \section{Introduction}
-En petit groupe de 3 \'etudiants, nous avons r\'ealis\'e un projet qui faisait appel au cours de programation syst\`eme que nous avons suivi tout au long du semestre. Le but de ce projet \'etait de d\'evelopper quelques m\'ecanisme de base destin\'es \`a servir dans le d\'eveloppement d'un petit jeu de plateforme 2D. Le projet s'est d\'eroul\'e en plusieurs parties distinctes. La premi\`ere partie portait sur la mise en place d’un m\'ecanisme de sauvegarde et de chargement de la carte utilis\'ee dans le jeu. La deuxième partie portait sur la gestion des temporisateurs permettant de planifier les diff\'erents \'ev\'enements du jeu.
+En petit groupe de 3 \'etudiants, nous avons r\'ealis\'e un projet qui faisait appel au cours de programation syst\`eme que nous avons suivi tout au long du semestre. Le but de ce projet \'etait de d\'evelopper quelques m\'ecanismes de base destin\'es \`a servir dans le d\'eveloppement d'un petit jeu de plateforme 2D. Le projet s'est d\'eroul\'e en plusieurs parties distinctes. La premi\`ere partie portait sur la mise en place d'un m\'ecanisme de sauvegarde et de chargement de la carte utilis\'ee dans le jeu. La deuxi\`eme partie portait sur la gestion des temporisateurs permettant de planifier les diff\'erents \'ev\'enements du jeu.
 
-\section{Manipulation de fichiers}
-petite intro
+
+\section{Manipulation de fichiers.}
+Nous faisons quelques manipulations de fichiers afin de rendre le jeu un peu plus r\'eactif, c'est-\`a-dire que tout joueur lorsqu'il commence un jeu devrait pouvoir m\'emoriser une partie en cours, ou faire quelques op\'erations sur une sauvegarde de jeu tel qu'un changement de pseudo sans avoir \`a tout recommencer. Le jeu \'etant d\'epourvu de ces options, nous impl\'ementerons des fonctions n\'ecessaires \`a la sauvegarde, au chargement de sauvegarde, et aux modifications de donn\'ees enregistr\'ees provenant d'une partie.
+
+
 	\subsection{map-save}
-	decrire map save
+	C'est une fonction qui consiste \`{a} m\'emoriser toutes les infos du jeu \`{a} un instant 'T', ce moment est d\'eclench\'e quand le joueur tape 's' lors d'une partie. Pour r\'ealiser cette fonction nous faisons des appels syst\`{e}mes plut\^ot qu'utiliser les fonctions existantes en faisant attention que le retour d'appel s'effectue correctement gr\^ace \`a notre fonction \textbf{verification()}. On d\'ebute par l'ouverture d'un fichier maps/saved.save gr\^ace \`a l'appel \textbf{open()} qui nous renverra un descripteur de fichier sur lequel nous ferons l'inscription de donn\'ees.
+
+        On proc\`{e}de \`a l'ajout de donn\'ees dans un ordre bien pr\'ecis. Cette ordre est important car nous aurons \`a lire ces donn\'ees plus tard. Parmis les donn\'ees enregistr\'ees, on retouve des \'el\'ements essentiels tels que la taille et la largeur de la fen\^etre, le nombre d'objets du jeu... A partir de ces donn\'ees on m\'emorise plus facilement la position de chacun des \'el\'ements existants, leur nom et toutes autres informations concernant cet objet, afin de les restituer convenablement \`a l'aide de boucles.
+
+        
 	\subsection{map-load}
-	decrire map load
+	C'est une fonction qui consiste \`{a} charger une partie qui aurait \'et\'e sauvergard\'ee au pr\'eable par notre joueur. Le chargement a pour but de r\'ecup\'erer toutes les informations dans un fichier par d\'efaut: maps/saved.save ou tout autre fichier \`a condition que celui-ci respect l'ordre de sauvegarde d'informations. Pour r\'ealiser cette fonction nous faisons des appels syst\`{e}mes plut\^ot qu'utiliser les fonctions existantes en faisant attention que le retour d'appel s'effectue correctement gr\^ace \`a notre fonction \textbf{verification()}.
+
+        On proc\`ede \`a la lecture de donn\'ees dans l'ordre d'\'ecriture fait sur fichier. Parmis les donn\'ees, on retrouve des \'el\'ements essentiels tels que les dimensions de la fen\^etre, du nombre d'objets possibles de cette partie ... A partir de ce relev\'e d'informations nous ferons le stockage dans des variables pr\'evues \`a cet effet. Une fois ces variables instanci\'ees nous proc\'edons \`a la cr\'eation d'une partie gr\^ace aux fonctions pr\'ed\'efinies telles que \textbf{map allocate()}, \textbf{map\_set}... Il suffit maintenant de taper '\i{./game -l maps/saved.map}' pour appliquer notre fonction.
+
+        
 	\subsection{Utilitaire de manipulation de carte}
-	decrire maputil
+	C'est un ex\'ecutable qui consiste \`a faire des changements sur une sauvegarde, il permet d'avoir les informations d'une partie, ou mieux encore changer des donn\'ees enregistr\'ees comme les dimensions de la fen\^etre ou les objets contenus dans la partie, s'il y avait un pseudo on aurait pu le changer aussi gr\^ace \`a cet ex\'ecutable.
+
+        Pour r\'ealiser cet ex\'ecutable nous faisons des appels syst\`{e}mes plut\^ot qu'utiliser les fonctions existantes en faisant attention que le retour d'appel s'effectue correctement gr\^ace \`a notre fonction \textbf{verification()}. En fonction du nombre d'arguments en ligne de commande nous pouvons d\'eterminer s'il sagit d'une modification ou d'un relev\'e d'informations.
+
+        Les relev\'es d'informations se font gr\^ace \`a \textbf{get()} qui lit notre fichier et qui instanciera une variable, puis la renverra afin de restituer l'information voulue par l'utilisateur selon l'option (- -getwidth, ...) choisie. \textbf{get()} fait appel \`a \textbf{lseek()} pour se deplacer \`a la bonne position, nous utilisons un pointeur pour l'instanciation de la valeur voulue, l'instanciation est realis\'ee gr\^ace \`a \textbf{verif\_ES()} qui dans le cas d'un relev\'e d'informations fera appel \`a \textbf{read()}. Une fois que l'op\'eration voulue est faite, \textbf{get()} renvoie la position courante (utile selon l'op\'eration que l'on souhaite faire).
+
+        Les modifications des donn\'ees ont presque le m\^eme proc\'ed\'e sauf que \textbf{verif\_ES()} fera appel \`a \textbf{write()}. Pour l'option - -pruneobjects qui efface des donn\'ees inutilis\'ees, on effectue une recherche d'objets inutilis\'es, on classifie les objets selon leur existance ou non dans la partie, ce classement est r\'ealis\'e par \textbf{exchange()}, les objets inutilis\'es finissent en fin de liste par \'echange, on utilise \textbf{ftruncate()} pour nettoyer la fin du fichier et une mise \`a jour est faite. 
 
 
-\section{Gestion des temporisateurs}
+\section{Gestion des temporisateurs.}
+A continuer
+
+
+\section{Difficult\'es rencontr\'ees.}
 A continuer
 
 \end{document}
