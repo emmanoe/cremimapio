@@ -72,9 +72,13 @@ int timer_init (void)
 
 timer_id_t timer_set (Uint32 delay, void *param)
 {
-  // TODO
+  struct itimerval it_val;
 
-  return (timer_id_t) NULL;
+  it_val.it_value.tv_sec =     delay/1000;
+  it_val.it_value.tv_usec =    (delay*1000) % 1000000;	
+  it_val.it_interval = it_val.it_value;
+  
+  return (timer_id_t) setitimer(ITIMER_REAL,,NULL);
 }
 
 int timer_cancel (timer_id_t timer_id)
