@@ -9,6 +9,30 @@
 
 #include "timer.h"
 
+void handler(int sig){
+  printf("reçu depuis dans %ld\n",(long)pthread_self());
+}
+
+void* run_th1(void* theSignal)
+{
+
+  printf("thread %ld : je tourne\n",(long)pthread_self());  
+
+  struct sigaction gestionSignal;
+  
+  gestionSignal.sa_handler=&handler;
+  gestionSignal.sa_flags=0;
+  
+  sigfillset(&gestionSignal.sa_mask);
+  sigdelset(&gestionSignal.sa_mask,SIGALRM);
+  sigaction(SIGALRM,&gestionSignal,NULL);
+  
+  while(1){
+    sigsuspend(&gestionSignal.sa_mask);
+  }
+ 
+}
+
 // Return number of elapsed µsec since... a long time ago
 static unsigned long get_time (void)
 {
@@ -27,7 +51,21 @@ static unsigned long get_time (void)
 // timer_init returns 1 if timers are fully implemented, 0 otherwise
 int timer_init (void)
 {
-  // TODO
+  pthread_t th1;
+  printf(" PID : %d\n",getpid());
+  printf("thread %ld\n",(long)pthread_self());
+
+  sigset_t mask;
+  sigemptyset(&mask);
+  sigaddset(&mask, SIGALRM);
+  sigprocmask(SIG_SETMASK, &mask, NULL);
+  
+  if(pthread_create(&th1, NULL, run_th1, NULL) == -1) {
+    perror("pthread_create");
+    return EXIT_FAILURE;
+  }
+
+  pthread_join(th1,NULL);
 
   return 0; // Implementation not ready
 }
