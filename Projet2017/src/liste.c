@@ -4,16 +4,16 @@
 #include "liste.h"
 
 struct List_ctrl{
-	liste_t debut;
-	liste_t fin;
+	Liste_t debut;
+	Liste_t fin;
 	int nb;
-}
+};
 
 struct Liste_t{
 	int delay;
 	void* param;
 	struct Liste_t* next;
-}
+};
 
 List_ctrl
 liste_ctrl_alloc(void){
@@ -40,7 +40,7 @@ liste_free_elem(Liste_t elem){
 
 Liste_t
 liste_prepend(Liste_t L, int delay, void* param, Liste_t next){
-	List_ctrl new = liste_alloc();
+	Liste_t new = liste_alloc();
 	assert(new);
 	new->delay = delay;
 	new->param = param;
@@ -79,7 +79,7 @@ liste_delete_after(Liste_t l, Liste_t p){
 			liste_free_elem(tmp);
 		}
 	}
-	return L;
+	return l;
 }
 
 Liste_t 
@@ -90,12 +90,12 @@ liste_next(Liste_t l){
 	return NULL;
 }
 
-void * liste_param(List_t l){
-	assert(L);
+void * liste_param(Liste_t l){
+	assert(l);
 	return(l->param);
 }
 
-int liste_delay(List_t l){
-	assert(L);
+int liste_delay(Liste_t l){
+	assert(l);
 	return(l->delay);
 }
