@@ -14,7 +14,7 @@ extern void liste_ctrl_free_elem(List_ctrl elem);
 
 extern void liste_free_elem(Liste_t elem);
 
-extern Liste_t liste_prepend(Liste_t L, int delay, void* param, Liste_t next);
+extern Liste_t liste_prepend(Liste_t L, int delay, void* param);
 
 extern Liste_t liste_delete_first(Liste_t liste);
 

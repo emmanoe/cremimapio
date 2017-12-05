@@ -45,7 +45,7 @@ liste_free_elem(Liste_t elem){
 }
 
 Liste_t
-liste_prepend(Liste_t L, int delay, void* param, Liste_t next){
+liste_prepend(Liste_t L, int delay, void* param){
 	Liste_t new = liste_alloc();
 	assert(new);
 	new->delay = delay;
