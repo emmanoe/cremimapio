@@ -56,7 +56,7 @@ int timer_init (void)
   printf("thread %ld\n",(long)pthread_self());
 
   sigset_t mask;
-  sigemptyset(&mask);
+     sigemptyset(&mask);
   sigaddset(&mask, SIGALRM);
   sigprocmask(SIG_SETMASK, &mask, NULL);
   
@@ -64,8 +64,6 @@ int timer_init (void)
     perror("pthread_create");
     return EXIT_FAILURE;
   }
-
-  pthread_join(th1,NULL);
 
   return 0; // Implementation not ready
 }
@@ -78,7 +76,7 @@ timer_id_t timer_set (Uint32 delay, void *param)
   it_val.it_value.tv_usec =    (delay*1000) % 1000000;	
   it_val.it_interval = it_val.it_value;
   
-  return (timer_id_t) setitimer(ITIMER_REAL,,NULL);
+  return (timer_id_t) setitimer(ITIMER_REAL,&it_val,NULL);
 }
 
 int timer_cancel (timer_id_t timer_id)
