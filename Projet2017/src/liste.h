@@ -2,8 +2,8 @@
 
 #ifndef LISTE_H
 #define LISTE_H
-typedef struct Liste_t *liste;
-typedef struct List_ctrl *l; 
+typedef struct Liste_t *Liste_t;
+typedef struct List_ctrl *List_ctrl; 
 
 /* **************************************************************** */
 extern List_ctrl liste_ctrl_alloc(void);
@@ -22,9 +22,9 @@ extern Liste_t liste_delete_after(Liste_t l, Liste_t p);
 
 extern Liste_t liste_next(Liste_t l);
 
-extern void * liste_param(List_t l);
+extern void * liste_param(Liste_t l);
 
-extern int liste_delay(List_t l);
+extern int liste_delay(Liste_t l);
 
 /* **************************************************************** */
 
