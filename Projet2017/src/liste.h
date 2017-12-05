@@ -10,6 +10,8 @@ extern List_ctrl liste_ctrl_alloc(void);
 
 extern Liste_t liste_alloc(void);
 
+extern void liste_ctrl_free_elem(List_ctrl elem);
+
 extern void liste_free_elem(Liste_t elem);
 
 extern Liste_t liste_prepend(Liste_t L, int delay, void* param, Liste_t next);

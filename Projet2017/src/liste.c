@@ -33,6 +33,12 @@ liste_alloc(void){
 }
 
 void
+liste_ctrl_free_elem(List_ctrl elem){
+	if(elem != NULL)
+		free(elem);
+}
+
+void
 liste_free_elem(Liste_t elem){
 	if(elem != NULL)
 		free(elem);
