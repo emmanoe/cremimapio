@@ -13,6 +13,8 @@
 struct ctrlList tempo;
 ctrl tempoList = &tempo;
 
+static pthread_mutex_t capsule = PTHREAD_MUTEX_INITIALIZER;
+
 // Return number of elapsed µsec since... a long time ago
 static unsigned long get_time (void)
 {
@@ -30,7 +32,9 @@ static unsigned long get_time (void)
 
 
 void handler(int sig){
+    pthread_mutex_lock (&capsule);
     printf ("sdl_push_event(%p) appelée au temps %ld\n",headList(listCtrl), get_time ());
+    pthread_mutex_unlock (&capsule);
 }
 
 void* run_th1(void* theSignal)
@@ -80,7 +84,9 @@ timer_id_t timer_set (Uint32 delay, void *param)
     it_val.it_value.tv_usec =    (delay*1000) % 1000000;
     it_val.it_interval = it_val.it_value;
     
+    pthread_mutex_lock (&capsule);
     globalAdd(tempoList,get_time()+delay, param);
+    pthread_mutex_unlock (&capsule);
     
     return (timer_id_t) setitimer(ITIMER_REAL,&it_val,NULL);
 }
