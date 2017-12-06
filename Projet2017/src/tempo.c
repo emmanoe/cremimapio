@@ -10,7 +10,7 @@
 #include "timer.h"
 #include "liste.h"
 
-struct ctrlList tempo;
+ctrl tempo;
 ctrl tempoList = &tempo;
 
 static pthread_mutex_t capsule = PTHREAD_MUTEX_INITIALIZER;
@@ -28,12 +28,11 @@ static unsigned long get_time (void)
     return tv.tv_sec * 1000000UL + tv.tv_usec;
 }
 
-#ifdef PADAWAN
 
 
 void handler(int sig){
     pthread_mutex_lock (&capsule);
-    printf ("sdl_push_event(%p) appelée au temps %ld\n",headList(listCtrl), get_time ());
+    printf ("sdl_push_event(%p) appelée au temps %ld\n",NULL/*headList(listCtrl)*/, get_time ());
     pthread_mutex_unlock (&capsule);
 }
 
@@ -58,19 +57,26 @@ void* run_th1(void* theSignal)
 // timer_init returns 1 if timers are fully implemented, 0 otherwise
 int timer_init (void)
 {
-    initCtrl(ptCtrl);
-    pthread_t th1;
-    printf("PID : %d\n",getpid());
-    
+    // Mask SIGALRM signal
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGALRM);
     sigprocmask(SIG_SETMASK, &mask, NULL);
+    /* now mask == {SIGALRM}*/
+
+    ctrl ptCtrl = malloc(sizeof(ctrl));
+    initCtrl(ptCtrl);
+
+    // Create thread
+    pthread_t th1;
+    printf("PID : %d\n",getpid());
+    
     
     if(pthread_create(&th1, NULL, run_th1, NULL) == -1) {
         perror("pthread_create");
         return EXIT_FAILURE;
     }
+    pthread_join(th1,NULL);
     
     return 1;
 }
