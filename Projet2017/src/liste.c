@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "liste.h"
+
 void initCtrl(ctrl c){
     c->debut=NULL;
     c->fin=NULL;

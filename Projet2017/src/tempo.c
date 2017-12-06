@@ -27,7 +27,7 @@ static unsigned long get_time (void)
     return tv.tv_sec * 1000000UL + tv.tv_usec;
 }
 
-
+#ifdef PADAWAN
 
 void handler(int sig){
     pthread_mutex_lock (&capsule);
@@ -66,10 +66,10 @@ int timer_init (void)
     sigprocmask(SIG_SETMASK, &mask, NULL);
     /* now mask == {SIGALRM}*/
     
-    struct listCtrl tempo;
-    tempoList = &tempo;
+    tempoList = (ctrl)malloc(sizeof(struct ctrlList));;
     
     initCtrl(tempoList);
+    puts("ici");
 
     // Create thread
     if(pthread_create(&th1, NULL, run_th1, NULL) == -1) {
@@ -77,7 +77,7 @@ int timer_init (void)
         return EXIT_FAILURE;
     }
     
-    return 0;
+    return 1;
 }
 
 timer_id_t timer_set (Uint32 delay, void *param)
