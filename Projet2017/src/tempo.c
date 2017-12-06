@@ -10,8 +10,7 @@
 #include "timer.h"
 #include "liste.h"
 
-ctrl tempo;
-ctrl tempoList = &tempo;
+ctrl tempoList;
 
 static pthread_mutex_t capsule = PTHREAD_MUTEX_INITIALIZER;
 
@@ -57,28 +56,28 @@ void* run_th1(void* theSignal)
 // timer_init returns 1 if timers are fully implemented, 0 otherwise
 int timer_init (void)
 {
+    pthread_t th1;
+    printf("PID : %d\n",getpid());
+    
     // Mask SIGALRM signal
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGALRM);
     sigprocmask(SIG_SETMASK, &mask, NULL);
     /* now mask == {SIGALRM}*/
-
-    ctrl ptCtrl = malloc(sizeof(ctrl));
-    initCtrl(ptCtrl);
+    
+    struct listCtrl tempo;
+    tempoList = &tempo;
+    
+    initCtrl(tempoList);
 
     // Create thread
-    pthread_t th1;
-    printf("PID : %d\n",getpid());
-    
-    
     if(pthread_create(&th1, NULL, run_th1, NULL) == -1) {
         perror("pthread_create");
         return EXIT_FAILURE;
     }
-    pthread_join(th1,NULL);
     
-    return 1;
+    return 0;
 }
 
 timer_id_t timer_set (Uint32 delay, void *param)
