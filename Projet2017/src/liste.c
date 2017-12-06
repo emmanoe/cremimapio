@@ -2,22 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct eventList{
-    int delay;
-    void* param;
-    struct eventList* next;
-    struct eventList* prev;
-};
-typedef struct eventList* list;
-
-
-struct ctrlList{
-    list debut;
-    list fin;
-    int size;
-};
-typedef struct ctrlList* ctrl;
-
 void initCtrl(ctrl c){
     c->debut=NULL;
     c->fin=NULL;

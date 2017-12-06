@@ -31,7 +31,7 @@ static unsigned long get_time (void)
 
 void handler(int sig){
     pthread_mutex_lock (&capsule);
-    printf ("sdl_push_event(%p) appelée au temps %ld\n",headList(listCtrl), get_time ());
+    printf ("sdl_push_event(%p) appelée au temps %ld\n",headList(tempoList), get_time ());
     pthread_mutex_unlock (&capsule);
 }
 
@@ -82,7 +82,6 @@ int timer_init (void)
 
 timer_id_t timer_set (Uint32 delay, void *param)
 {
-    
     struct itimerval it_val;
     
     it_val.it_value.tv_sec =     delay/1000;

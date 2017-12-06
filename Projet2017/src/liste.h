@@ -2,7 +2,20 @@
 
 #ifndef LISTE_H
 #define LISTE_H
+
+struct eventList{
+    int delay;
+    void* param;
+    struct eventList* next;
+    struct eventList* prev;
+};
 typedef struct eventList* list;
+
+struct ctrlList{
+    list debut;
+    list fin;
+    int size;
+};
 typedef struct ctrlList* ctrl;
 
 /* **************************************************************** */
