@@ -157,3 +157,4 @@ void* headList(ctrl c){
     delTop(c);
     return param;
 }
+
