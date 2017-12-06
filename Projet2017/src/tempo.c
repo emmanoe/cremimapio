@@ -31,7 +31,7 @@ static unsigned long get_time (void)
 
 void handler(int sig){
     pthread_mutex_lock (&capsule);
-    printf ("sdl_push_event(%p) appelée au temps %ld\n",NULL/*headList(listCtrl)*/, get_time ());
+    printf ("sdl_push_event(%p) appelée au temps %ld\n",headList(listCtrl), get_time ());
     pthread_mutex_unlock (&capsule);
 }
 
