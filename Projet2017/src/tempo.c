@@ -5,6 +5,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <sys/types.h>
 #include <pthread.h>
 
 #include "timer.h"
@@ -29,26 +30,49 @@ static unsigned long get_time (void)
 
 #ifdef PADAWAN
 
-void handler(int sig){
-    pthread_mutex_lock (&capsule);
-    printf ("sdl_push_event(%p) appelée au temps %ld\n",headList(tempoList), get_time ());
-    pthread_mutex_unlock (&capsule);
+
+
+void handlerALRM(int sig){
+
+  pthread_mutex_lock (&capsule);
+  printf("recu, %d\n",tempoList->size);
+  if(tempoList->debut != NULL)
+    sdl_push_event(headList(tempoList));
+  pthread_kill(pthread_self(),SIGUSR1);
+  pthread_mutex_unlock (&capsule);
+    
+    
+}
+
+void handlerSIGUSR1(int sig){
+  printf("acquitte, %d\n",tempoList->size);
 }
 
 void* run_th1(void* theSignal)
 {
     
-    struct sigaction gestionSignal;
+    struct sigaction gestionSignalALRM;
+    struct sigaction gestionSignalSIGUSR1;
     
-    gestionSignal.sa_handler=&handler;
-    gestionSignal.sa_flags=0;
+    gestionSignalALRM.sa_handler=&handlerALRM;
+    gestionSignalSIGUSR1.sa_handler=&handlerSIGUSR1;
     
-    sigfillset(&gestionSignal.sa_mask);
-    sigdelset(&gestionSignal.sa_mask,SIGALRM);
-    sigaction(SIGALRM,&gestionSignal,NULL);
+    gestionSignalALRM.sa_flags=0;
+    gestionSignalSIGUSR1.sa_flags=0;
+    
+    sigfillset(&gestionSignalALRM.sa_mask);
+    sigdelset(&gestionSignalALRM.sa_mask,SIGALRM);
+    
+    sigfillset(&gestionSignalSIGUSR1.sa_mask);
+    sigdelset(&gestionSignalSIGUSR1.sa_mask,SIGUSR1);
+    
+    sigaction(SIGALRM,&gestionSignalALRM,NULL);
+    sigaction(SIGUSR1,&gestionSignalSIGUSR1,NULL);
     
     while(1){
-        sigsuspend(&gestionSignal.sa_mask);
+        sigsuspend(&gestionSignalALRM.sa_mask);
+	puts("suivant");
+	sigsuspend(&gestionSignalSIGUSR1.sa_mask);
     }
     
 }
@@ -63,14 +87,14 @@ int timer_init (void)
     sigset_t mask;
     sigemptyset(&mask);
     sigaddset(&mask, SIGALRM);
+    sigaddset(&mask, SIGUSR1);
     sigprocmask(SIG_SETMASK, &mask, NULL);
     /* now mask == {SIGALRM}*/
     
-    tempoList = (ctrl)malloc(sizeof(struct ctrlList));;
+    tempoList = (ctrl)malloc(sizeof(struct ctrlList));
     
     initCtrl(tempoList);
-    puts("ici");
-
+    
     // Create thread
     if(pthread_create(&th1, NULL, run_th1, NULL) == -1) {
         perror("pthread_create");

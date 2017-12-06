@@ -104,16 +104,19 @@ void delEmpty(ctrl c){
 }
 
 void delTop(ctrl c){
+
+  if( c != NULL ){
     list del = c->debut;
-    
-    c->debut = c->debut->next;
-    if(c->debut != NULL){
-        c->debut->prev = NULL;
-        c->size--;
+    if(c->size > 1){
+      c->debut = del->next;
+      c->debut->prev = NULL;
+      c->size--;
+    }else{
+      delEmpty(c);
     }
-    else
-        delEmpty(c);
     free(del);
+  }
+  
 }
 
 void globalAdd(ctrl c,int delay, void* param){
