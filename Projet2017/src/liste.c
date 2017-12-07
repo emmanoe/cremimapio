@@ -10,7 +10,7 @@ void initCtrl(ctrl c){
     c->size=0;
 }
 
-list alloc(int delay, void* param){
+list alloc(long delay, void* param){
     
     list new = (list)malloc(sizeof(struct eventList));
     new->delay=delay;
@@ -19,7 +19,7 @@ list alloc(int delay, void* param){
     return new;
 }
 
-void addTop(ctrl c,int delay, void* param){
+void addTop(ctrl c,long delay, void* param){
     list new = alloc(delay,param);
     
     if(c->size == 0){
@@ -36,7 +36,7 @@ void addTop(ctrl c,int delay, void* param){
     c->size++;
 }
 
-void addAfter(ctrl c,int delay, void* param,list after){
+void addAfter(ctrl c,long delay, void* param,list after){
     
     list new = alloc(delay,param);
     if(c->size == 0){
@@ -58,7 +58,7 @@ void addAfter(ctrl c,int delay, void* param,list after){
     c->size++;
 }
 
-void addBefore(ctrl c,int delay, void* param,list before){
+void addBefore(ctrl c,long delay, void* param,list before){
     list new = alloc(delay,param);
     if(c->size == 0){
         c->fin = new;
@@ -81,7 +81,7 @@ void addBefore(ctrl c,int delay, void* param,list before){
     c->size++;
 }
 
-void addBottom(ctrl c,int delay, void* param){
+void addBottom(ctrl c,long delay, void* param){
     list new = alloc(delay,param);
     if(c->size == 0){
         c->fin = new;
@@ -119,7 +119,7 @@ void delTop(ctrl c){
   
 }
 
-void globalAdd(ctrl c,int delay, void* param){
+void globalAdd(ctrl c,long delay, void* param){
     
     list tmp = c->debut;
     
