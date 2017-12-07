@@ -10,7 +10,7 @@ void initCtrl(ctrl c){
     c->size=0;
 }
 
-list alloc(long  delay, void* param){
+list alloc(long delay, void* param){
     
     list new = (list)malloc(sizeof(struct eventList));
     new->delay=delay;

@@ -21,7 +21,7 @@ typedef struct ctrlList* ctrl;
 /* **************************************************************** */
 extern void initCtrl(ctrl c);
 
-extern list alloc(long  delay, void* param);
+extern list alloc(long delay, void* param);
 
 extern void addTop(ctrl c,long delay, void* param);
 
