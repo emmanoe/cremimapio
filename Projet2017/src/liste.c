@@ -144,10 +144,6 @@ long headListDelay(ctrl c){
     return c->debut->delay;
 }
 
-list nextList(ctrl c){
-    return c->debut->next;
-}
-
 void* headListParam(ctrl c){
     return c->debut->param;
 }
