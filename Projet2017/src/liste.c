@@ -140,10 +140,15 @@ void globalAdd(ctrl c,long delay, void* param){
     }
 }
 
-void* headList(ctrl c){
-    
-    void *param = c->debut->param;
-    delTop(c);
-    return param;
+long headListDelay(ctrl c){
+    return c->debut->delay;
+}
+
+list nextList(ctrl c){
+    return c->debut->next;
+}
+
+void* headListParam(ctrl c){
+    return c->debut->param;
 }
 

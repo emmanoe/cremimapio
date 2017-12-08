@@ -30,49 +30,30 @@ static unsigned long get_time (void)
 
 #ifdef PADAWAN
 
-
-
 void handlerALRM(int sig){
 
   pthread_mutex_lock (&capsule);
-  printf("recu, %d\n",tempoList->size);
-  if(tempoList->debut != NULL)
-    sdl_push_event(headList(tempoList));
-  pthread_kill(pthread_self(),SIGUSR1);
-  pthread_mutex_unlock (&capsule);
-    
-    
-}
+    do {
+        sdl_push_event(headListParam(tempoList));
+        int delay = headListDelay(tempoList);
+        delTop(tempoList);
+    }while(headListDelay(tempoList) - delay < 10000);
 
-void handlerSIGUSR1(int sig){
-  printf("acquitte, %d\n",tempoList->size);
+  pthread_mutex_unlock (&capsule);
+
 }
 
 void* run_th1(void* theSignal)
 {
-    
     struct sigaction gestionSignalALRM;
-    struct sigaction gestionSignalSIGUSR1;
-    
     gestionSignalALRM.sa_handler=&handlerALRM;
-    gestionSignalSIGUSR1.sa_handler=&handlerSIGUSR1;
-    
     gestionSignalALRM.sa_flags=0;
-    gestionSignalSIGUSR1.sa_flags=0;
-    
     sigfillset(&gestionSignalALRM.sa_mask);
     sigdelset(&gestionSignalALRM.sa_mask,SIGALRM);
-    
-    sigfillset(&gestionSignalSIGUSR1.sa_mask);
-    sigdelset(&gestionSignalSIGUSR1.sa_mask,SIGUSR1);
-    
     sigaction(SIGALRM,&gestionSignalALRM,NULL);
-    sigaction(SIGUSR1,&gestionSignalSIGUSR1,NULL);
     
     while(1){
         sigsuspend(&gestionSignalALRM.sa_mask);
-	puts("suivant");
-	sigsuspend(&gestionSignalSIGUSR1.sa_mask);
     }
     
 }
@@ -81,7 +62,6 @@ void* run_th1(void* theSignal)
 int timer_init (void)
 {
     pthread_t th1;
-    printf("PID : %d\n",getpid());
     
     // Mask SIGALRM signal
     sigset_t mask;
@@ -115,8 +95,9 @@ timer_id_t timer_set (Uint32 delay, void *param)
     pthread_mutex_lock (&capsule);
     globalAdd(tempoList,get_time()+delay, param);
     pthread_mutex_unlock (&capsule);
+    setitimer(ITIMER_REAL,&it_val,NULL);
     
-    return (timer_id_t) setitimer(ITIMER_REAL,&it_val,NULL);
+    return 0 ;
 }
 
 int timer_cancel (timer_id_t timer_id)
