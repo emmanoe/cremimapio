@@ -37,21 +37,15 @@ void handlerALRM(int sig){
   unsigned long delay;
   while(tempoList->size > 0) {
     sdl_push_event(headListParam(tempoList));
-    delay = headListDelay(tempoList);
-    delTop(tempoList);
     printf("zdc %d\n",tempoList->size);
-    if( (tempoList->size > 0) && get_time() > tempoList->debut->launch_time ){
-      puts("cond1");
-      continue;
-    }else if((tempoList->size > 0) &&  tempoList->debut->launch_time - get_time() < 10000){
+    delTop(tempoList);
+    if((tempoList->size > 0) &&  !(tempoList->debut->launch_time - 15000 > get_time())){
       puts("cond2");
-      continue;
     }else{
       break;
     }
   }
 
-  puts("eee");
   
   if(tempoList->size > 0 ){
 
@@ -63,7 +57,6 @@ void handlerALRM(int sig){
     it_val.it_interval.tv_sec =  0;
     it_val.it_interval.tv_usec =  0;
     setitimer(ITIMER_REAL,&it_val,NULL);
-    printf("             %lu\n",delay);
   }
   pthread_mutex_unlock (&capsule);
   
