@@ -32,26 +32,38 @@ static unsigned long get_time (void)
 
 void handlerALRM(int sig){
 
-  puts("ok");
   
   pthread_mutex_lock (&capsule);
-  int delay;
-  do {
+  unsigned long delay;
+  while(tempoList->size > 0) {
     sdl_push_event(headListParam(tempoList));
     delay = headListDelay(tempoList);
     delTop(tempoList);
-  }while(tempoList->size > 0 && headListDelay(tempoList) - delay < 10000);
+    printf("zdc %d\n",tempoList->size);
+    if( (tempoList->size > 0) && get_time() > tempoList->debut->launch_time ){
+      puts("cond1");
+      continue;
+    }else if((tempoList->size > 0) &&  tempoList->debut->launch_time - get_time() < 10000){
+      puts("cond2");
+      continue;
+    }else{
+      break;
+    }
+  }
 
+  puts("eee");
+  
   if(tempoList->size > 0 ){
 
     struct itimerval it_val;
-    delay = tempoList->debut->delay - get_time();
-    it_val.it_value.tv_sec =     delay/1000;
-    it_val.it_value.tv_usec =    (delay*1000) % 1000000;
+    unsigned long toto = get_time();
+    delay = tempoList->debut->delay - (toto - tempoList->debut->add_time);
+    it_val.it_value.tv_sec = delay/1000;
+    it_val.it_value.tv_usec =  (delay*1000) % 1000000;
     it_val.it_interval.tv_sec =  0;
     it_val.it_interval.tv_usec =  0;
-    printf("new timer ? %lu\n",it_val.it_value.tv_sec);
     setitimer(ITIMER_REAL,&it_val,NULL);
+    printf("             %lu\n",delay);
   }
   pthread_mutex_unlock (&capsule);
   
@@ -102,17 +114,18 @@ int timer_init (void)
 timer_id_t timer_set (Uint32 delay, void *param)
 {
   struct itimerval it_val;
+  unsigned long convers_delay = delay*1000;
   
   it_val.it_value.tv_sec =     delay/1000;
   it_val.it_value.tv_usec =    (delay*1000) % 1000000;
   it_val.it_interval.tv_sec =  0;
   it_val.it_interval.tv_usec =  0;
-  
   pthread_mutex_lock (&capsule);
-  if(globalAdd(tempoList,get_time(),get_time()+delay, param)){
-    puts("change 1");
+  unsigned long toto = get_time();
+  if(globalAdd(tempoList,toto,toto+ convers_delay, convers_delay, param)){
     setitimer(ITIMER_REAL,&it_val,NULL);
   }
+    
   pthread_mutex_unlock (&capsule);
   
 
