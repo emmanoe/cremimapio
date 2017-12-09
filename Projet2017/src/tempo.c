@@ -39,11 +39,16 @@ void handlerALRM(int sig){
     while(tempoList->size > 0 ){
         sdl_push_event(headListParam(tempoList));
         delTop(tempoList);
-        if(!(tempoList->size > 0 && (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 10000)){
-            break;
-        }else{
-            printf("delay proche  = %lu\n",(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)));
-        }
+        
+        if(tempoList->size > 0 ){
+            
+            int cood = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
+            delay = cond < 0 ? (0 - cond) : cond;
+            if(delay < 10000)){
+                break;
+            }else{
+                printf("delay proche  = %lu\n",(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)));
+            }
         
     }
     
@@ -52,11 +57,8 @@ void handlerALRM(int sig){
         
         struct itimerval it_val;
         save_moment = get_time();
-        if(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time) < 0){
-            delay = 0 - headListDelay(tempoList) - (save_moment - tempoList->debut->add_time);
-        }else{
-            delay = headListDelay(tempoList) - (save_moment - tempoList->debut->add_time);
-        }
+        int cood = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
+        delay = cond < 0 ? (0 - cond) : cond;
         it_val.it_value.tv_sec = delay/1000;
         it_val.it_value.tv_usec =  (delay*1000) % 1000000;
         it_val.it_interval.tv_sec =  0;
