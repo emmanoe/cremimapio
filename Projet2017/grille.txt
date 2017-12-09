@@ -1,0 +1,18 @@
+===================================================================================
+FONCTIONNALITÉS                                        | DIFFICULTÉ | SCORE (/10) |
+===================================================================================
+Sauvegarde et chargement des cartes                    |            |             |
+  - Sauvegarde                                         | +          |  10         |
+  - Chargement                                         | +          |  10         |      
+Utilitaire de manipulation de carte                    |            |             |
+  - Informations élémentaires (e.g. maputil –getinfo)  | +          |  10         |
+  - Modification de la taille de la carte              | ++         |  10         |
+  - Remplacement des objets d’une carte                | +++        |  10         |
+  - Suppression des objets inutilisés                  | ++         |  10         |
+Gestion des temporisateurs                             |            |             |
+  - Réception des signaux par un thread démon          | +          |  10         |
+  - Implémentation simple (un temporisateur à la fois) | +          |  10         |
+  - Implémentation complète (et protocole de test)     | +++        |  06         |
+  - Mise en service dans le jeu                        | ++         |  05         |
+  - Bonus : Annulation des temporisateurs              | ++         |  00         |
+===================================================================================
