@@ -44,8 +44,8 @@ void handlerALRM(int sig){
             
             unsigned long cond = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
             delay = cond < 0 ? (0 - cond) : cond;
-            printf("cond : %d\n",delay);
-            if(delay < 10000)){
+            printf("cond : %ld\n",delay);
+            if(delay < 10000){
                 break;
             }else{
                 printf("delay proche  = %lu\n",(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)));
@@ -65,7 +65,7 @@ void handlerALRM(int sig){
         it_val.it_value.tv_usec =  (delay*1000) % 1000000;
         it_val.it_interval.tv_sec =  0;
         it_val.it_interval.tv_usec =  0;
-        printf("new timer = %d\n",it_val.it_value.tv_sec);
+        printf("new timer = %ld\n",it_val.it_value.tv_sec);
         setitimer(ITIMER_REAL,&it_val,NULL);
     }
     pthread_mutex_unlock (&capsule);
