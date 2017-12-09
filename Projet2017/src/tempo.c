@@ -31,36 +31,37 @@ static unsigned long get_time (void)
 #ifdef PADAWAN
 
 void handlerALRM(int sig){
-
-  
-  pthread_mutex_lock (&capsule);
-  unsigned long delay;
-  while(tempoList->size > 0) {
-    sdl_push_event(headListParam(tempoList));
-    printf("zdc %d\n",tempoList->size);
-    delTop(tempoList);
-    if((tempoList->size > 0) &&  !(tempoList->debut->launch_time - 15000 > get_time())){
-      puts("cond2");
-    }else{
-      break;
+    
+    
+    pthread_mutex_lock (&capsule);
+    unsigned long delay;
+    unsigned long save_moment = get_time();
+    while(tempoList->size > 0 ){
+        sdl_push_event(headListParam(tempoList));
+        delTop(tempoList);
+        if(!(tempoList->size > 0 && (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 10000)){
+            break;
+        }else{
+            printf("delay proche  = %lu\n",(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)));
+        }
+        
     }
-  }
-
-  
-  if(tempoList->size > 0 ){
-
-    struct itimerval it_val;
-    unsigned long toto = get_time();
-    delay = tempoList->debut->delay - (toto - tempoList->debut->add_time);
-    it_val.it_value.tv_sec = delay/1000;
-    it_val.it_value.tv_usec =  (delay*1000) % 1000000;
-    it_val.it_interval.tv_sec =  0;
-    it_val.it_interval.tv_usec =  0;
-    setitimer(ITIMER_REAL,&it_val,NULL);
-  }
-  pthread_mutex_unlock (&capsule);
-  
-
+    
+    
+    if(tempoList->size > 0 ){
+        
+        struct itimerval it_val;
+        save_moment = get_time();
+        delay = headListDelay(tempoList) - (save_moment - tempoList->debut->add_time);
+        it_val.it_value.tv_sec = delay/1000;
+        it_val.it_value.tv_usec =  (delay*1000) % 1000000;
+        it_val.it_interval.tv_sec =  0;
+        it_val.it_interval.tv_usec =  0;
+        printf("new timer = %d\n",it_val.it_value.tv_sec);
+        setitimer(ITIMER_REAL,&it_val,NULL);
+    }
+    pthread_mutex_unlock (&capsule);
+    
 }
 
 void* run_th1(void* theSignal)
@@ -87,7 +88,6 @@ int timer_init (void)
   sigset_t mask;
   sigemptyset(&mask);
   sigaddset(&mask, SIGALRM);
-  sigaddset(&mask, SIGUSR1);
   sigprocmask(SIG_SETMASK, &mask, NULL);
   /* now mask == {SIGALRM}*/
     
@@ -106,23 +106,24 @@ int timer_init (void)
 
 timer_id_t timer_set (Uint32 delay, void *param)
 {
-  struct itimerval it_val;
-  unsigned long convers_delay = delay*1000;
-  
-  it_val.it_value.tv_sec =     delay/1000;
-  it_val.it_value.tv_usec =    (delay*1000) % 1000000;
-  it_val.it_interval.tv_sec =  0;
-  it_val.it_interval.tv_usec =  0;
-  pthread_mutex_lock (&capsule);
-  unsigned long toto = get_time();
-  if(globalAdd(tempoList,toto,toto+ convers_delay, convers_delay, param)){
-    setitimer(ITIMER_REAL,&it_val,NULL);
-  }
+    struct itimerval it_val;
+    unsigned long convers_delay = delay*1000;
+    unsigned long save_moment = get_time();
     
-  pthread_mutex_unlock (&capsule);
-  
-
-  return 0 ;
+    it_val.it_value.tv_sec =     delay/1000;
+    it_val.it_value.tv_usec =    (delay*1000) % 1000000;
+    it_val.it_interval.tv_sec =  0;
+    it_val.it_interval.tv_usec =  0;
+    pthread_mutex_lock (&capsule);
+    
+    if(globalAdd(tempoList,save_moment,save_moment+convers_delay, convers_delay, param)){
+        puts("first");
+        setitimer(ITIMER_REAL,&it_val,NULL);
+    }
+    
+    pthread_mutex_unlock (&capsule);
+    
+    return 0 ;
 }
 
 int timer_cancel (timer_id_t timer_id)

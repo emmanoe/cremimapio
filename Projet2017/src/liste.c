@@ -132,17 +132,17 @@ int globalAdd(ctrl c,unsigned long add_time,unsigned long launch_time,unsigned l
     }
     
     if(tmp == NULL && c->size == 0){
-      addTop(c,add_time,launch_time,delay,param);
-	return 1;
+        addTop(c,add_time,launch_time,delay,param);
+        return 1;
     }else if(tmp != NULL ){
-        if(delay <= tmp->launch_time && tmp == c->debut){
-	  addTop(c,add_time,launch_time,delay,param);
-	    return 1;
+        if(launch_time <= tmp->launch_time && tmp == c->debut){
+            addTop(c,add_time,launch_time,delay,param);
+            return 1;
         }else{
-	  addBefore(c,add_time,launch_time,delay,param,tmp);
+            addBefore(c,add_time,launch_time,delay,param,tmp);
         }
     }else{
-      addBottom(c,add_time,launch_time,delay,param);
+        addBottom(c,add_time,launch_time,delay,param);
     }
     return action;
 }
