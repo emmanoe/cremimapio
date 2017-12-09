@@ -42,8 +42,9 @@ void handlerALRM(int sig){
         
         if(tempoList->size > 0 ){
             
-            int cood = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
+            unsigned long cood = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
             delay = cond < 0 ? (0 - cond) : cond;
+            printf("cond : %d\n",delay);
             if(delay < 10000)){
                 break;
             }else{
@@ -57,7 +58,7 @@ void handlerALRM(int sig){
         
         struct itimerval it_val;
         save_moment = get_time();
-        int cood = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
+        unsigned long cood = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
         delay = cond < 0 ? (0 - cond) : cond;
         it_val.it_value.tv_sec = delay/1000;
         it_val.it_value.tv_usec =  (delay*1000) % 1000000;
