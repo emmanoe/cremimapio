@@ -42,7 +42,7 @@ void handlerALRM(int sig){
         
         if(tempoList->size > 0 ){
             
-            unsigned long cond = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
+            unsigned long cond = (( (int)(headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 0) ? -(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) : (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)));
             delay = ((int)cond < 0 ? -cond : cond);
             printf("cond : %lu\n",cond);
             printf("delay : %lu\n",delay);
@@ -59,11 +59,11 @@ void handlerALRM(int sig){
         
         struct itimerval it_val;
         save_moment = get_time();
-        unsigned long cond = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
+        unsigned long cond = (( (int)(headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 0) ? -(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) : (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)));
         delay = ((int)cond < 0 ? -cond : cond);
         printf("delay : %lu\n",delay);
-        it_val.it_value.tv_sec = delay/1000;
-        it_val.it_value.tv_usec =  (delay*1000) % 1000000;
+        it_val.it_value.tv_sec =     delay/1000000;
+        it_val.it_value.tv_usec =    delay%1000000;
         it_val.it_interval.tv_sec =  0;
         it_val.it_interval.tv_usec =  0;
         printf("new timer = %lu\n",it_val.it_value.tv_sec);
@@ -119,13 +119,14 @@ timer_id_t timer_set (Uint32 delay, void *param)
     unsigned long convers_delay = delay*1000;
     unsigned long save_moment = get_time();
     
-    it_val.it_value.tv_sec =     delay/1000;
-    it_val.it_value.tv_usec =    (delay*1000) % 1000000;
+    it_val.it_value.tv_sec =     delay/1000000;
+    it_val.it_value.tv_usec =    delay%1000000;
     it_val.it_interval.tv_sec =  0;
     it_val.it_interval.tv_usec =  0;
     pthread_mutex_lock (&capsule);
     
     if(globalAdd(tempoList,save_moment,save_moment+convers_delay, convers_delay, param)){
+        printf("new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
         puts("first");
         setitimer(ITIMER_REAL,&it_val,NULL);
     }
