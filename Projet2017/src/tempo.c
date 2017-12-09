@@ -52,7 +52,11 @@ void handlerALRM(int sig){
         
         struct itimerval it_val;
         save_moment = get_time();
-        delay = headListDelay(tempoList) - (save_moment - tempoList->debut->add_time);
+        if(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time) < 0){
+            delay = 0 - headListDelay(tempoList) - (save_moment - tempoList->debut->add_time);
+        }else{
+            delay = headListDelay(tempoList) - (save_moment - tempoList->debut->add_time);
+        }
         it_val.it_value.tv_sec = delay/1000;
         it_val.it_value.tv_usec =  (delay*1000) % 1000000;
         it_val.it_interval.tv_sec =  0;
