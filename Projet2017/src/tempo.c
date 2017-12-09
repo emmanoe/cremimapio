@@ -44,11 +44,12 @@ void handlerALRM(int sig){
             
             unsigned long cond = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
             delay = cond < 0 ? (0 - cond) : cond;
-            printf("cond : %ld\n",delay);
+            printf("cond : %ld\n",cond);
+            printf("delay : %ld\n",delay);
             if(delay < 10000){
                 break;
             }else{
-                printf("delay proche  = %lu\n",(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)));
+                printf("delay proche  = %lu\n",delay);
             }
         
         }
@@ -61,6 +62,7 @@ void handlerALRM(int sig){
         save_moment = get_time();
         unsigned long cond = (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time));
         delay = cond < 0 ? (0 - cond) : cond;
+        printf("delay : %ld\n",delay);
         it_val.it_value.tv_sec = delay/1000;
         it_val.it_value.tv_usec =  (delay*1000) % 1000000;
         it_val.it_interval.tv_sec =  0;
