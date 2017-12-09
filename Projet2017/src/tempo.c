@@ -51,6 +51,7 @@ void handlerALRM(int sig){
                 printf("delay proche  = %lu\n",(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)));
             }
         
+        }
     }
     
     
