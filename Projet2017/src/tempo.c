@@ -37,6 +37,7 @@ void handlerALRM(int sig){
     unsigned long delay;
     unsigned long save_moment = get_time();
     while(tempoList->size > 0 ){
+        puts("push");
         sdl_push_event(headListParam(tempoList));
         delTop(tempoList);
         
@@ -59,12 +60,12 @@ void handlerALRM(int sig){
         save_moment = get_time();
         unsigned long cond = (( (int)(headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 0) ? -(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) : (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)));
         delay = ((int)cond < 0 ? -cond : cond);
-        printf("delay : %lu\n",delay);
+        printf("2) delay : %lu\n",delay);
         it_val.it_value.tv_sec =     delay/1000000;
         it_val.it_value.tv_usec =    delay%1000000;
         it_val.it_interval.tv_sec =  0;
         it_val.it_interval.tv_usec =  0;
-        printf("new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
+        printf("2) new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
         setitimer(ITIMER_REAL,&it_val,NULL);
     }
     pthread_mutex_unlock (&capsule);
@@ -124,8 +125,8 @@ timer_id_t timer_set (Uint32 delay, void *param)
     pthread_mutex_lock (&capsule);
     
     if(globalAdd(tempoList,save_moment,save_moment+convers_delay, convers_delay, param)){
-        printf("delay : %lu\n",delay);
-        printf("new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
+        printf("1) delay : %lu\n",delay);
+        printf("1) new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
 
         setitimer(ITIMER_REAL,&it_val,NULL);
     }
