@@ -45,6 +45,25 @@ extern void* headListParam(ctrl c);
 
 extern long headListDelay(ctrl c);
 
+/* getter */
+extern int get_ctrl_size(ctrl c);
+
+extern list get_ctrl_debut(ctrl c);
+
+extern list get_ctrl_fin(ctrl c);
+
+extern unsigned long get_list_delay(list l);
+
+extern unsigned long get_list_added_time(list l);
+
+extern unsigned long get_list_launch_time(list l);
+
+extern void* get_param(list l);
+
+extern list get_next(list l);
+
+extern list get_prev(list l);
+
 /* **************************************************************** */
 
 #endif
