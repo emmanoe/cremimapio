@@ -32,34 +32,20 @@ static unsigned long get_time (void)
 
 void handlerALRM(int sig){
     
-    
     pthread_mutex_lock (&capsule);
+    struct itimerval it_val;
     unsigned long delay;
     unsigned long save_moment = get_time();
-    while(tempoList->size > 0 ){
+    for(;tempoList->size > 0;){
         puts("push");
         sdl_push_event(headListParam(tempoList));
         delTop(tempoList);
         
-        if(tempoList->size > 0 ){
-            
-            unsigned long cond = (( (int)(headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 0) ? -(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) : (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)));
-            delay = ((int)cond < 0 ? -cond : cond);
-            if(delay > 10000){
-                break;
-            }else{
-                printf("delay proche  = %lu\n",delay);
-            }
+        delay = (headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) ;
+        if( (int)delay <= 10000){
+            continue;
         }
-    }
-    
-    
-    if(tempoList->size > 0 ){
         
-        struct itimerval it_val;
-        save_moment = get_time();
-        unsigned long cond = (( (int)(headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)) < 0) ? -(headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) : (headListDelay(tempoList)- (save_moment - tempoList->debut->add_time)));
-        delay = ((int)cond < 0 ? -cond : cond);
         printf("2) delay : %lu\n",delay);
         it_val.it_value.tv_sec =     delay/1000000;
         it_val.it_value.tv_usec =    delay%1000000;
@@ -67,6 +53,7 @@ void handlerALRM(int sig){
         it_val.it_interval.tv_usec =  0;
         printf("2) new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
         setitimer(ITIMER_REAL,&it_val,NULL);
+        break;
     }
     pthread_mutex_unlock (&capsule);
     
@@ -118,8 +105,8 @@ timer_id_t timer_set (Uint32 delay, void *param)
     unsigned long convers_delay = delay*1000;
     unsigned long save_moment = get_time();
     
-    it_val.it_value.tv_sec =     delay/1000000;
-    it_val.it_value.tv_usec =    delay%1000000;
+    it_val.it_value.tv_sec =     convers_delay/1000000;
+    it_val.it_value.tv_usec =    convers_delay%1000000;
     it_val.it_interval.tv_sec =  0;
     it_val.it_interval.tv_usec =  0;
     pthread_mutex_lock (&capsule);
