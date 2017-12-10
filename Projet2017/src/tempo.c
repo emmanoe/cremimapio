@@ -36,14 +36,20 @@ void handlerALRM(int sig){
     struct itimerval it_val;
     unsigned long delay;
     unsigned long save_moment = get_time();
+
     for(;tempoList->size > 0;){
         puts("push");
         sdl_push_event(headListParam(tempoList));
         delTop(tempoList);
-        
-        delay = (headListDelay(tempoList) - (save_moment - tempoList->debut->add_time)) ;
+
+        if(!(tempoList->size > 0)){
+          break;
+        }
+
+        delay = (tempoList->debut->launch_time - get_time()) ;
         if( (int)delay <= 10000){
-            continue;
+          printf("if: delay: %lu\n",delay );
+          continue;
         }
         
         printf("2) delay : %lu\n",delay);
@@ -112,7 +118,7 @@ timer_id_t timer_set (Uint32 delay, void *param)
     pthread_mutex_lock (&capsule);
     
     if(globalAdd(tempoList,save_moment,save_moment+convers_delay, convers_delay, param)){
-        printf("1) delay : %lu\n",delay);
+        printf("1) delay : %u\n",delay);
         printf("1) new timer = %lus%lu\n",it_val.it_value.tv_sec,it_val.it_value.tv_usec);
 
         setitimer(ITIMER_REAL,&it_val,NULL);
