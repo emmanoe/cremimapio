@@ -127,7 +127,7 @@ int globalAdd(ctrl c,unsigned long add_time,unsigned long launch_time,unsigned l
     list tmp = c->debut;
     int action = 0;
     puts("add");
-    while(tmp != NULL && delay > tmp->delay ){
+    while(tmp != NULL && launch_time > tmp->launch_time ){
         tmp = tmp->next;
     }
     
@@ -139,7 +139,7 @@ int globalAdd(ctrl c,unsigned long add_time,unsigned long launch_time,unsigned l
             addTop(c,add_time,launch_time,delay,param);
             return 1;
         }else{
-            addBefore(c,add_time,launch_time,delay,param,tmp);
+            addAfter(c,add_time,launch_time,delay,param,tmp);
         }
     }else{
         addBottom(c,add_time,launch_time,delay,param);
